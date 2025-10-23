@@ -1,0 +1,17 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+[functions]
+  node_bundler = "esbuild"
+
+# Environment variables
+# Set these in your Netlify dashboard under Site settings > Environment variables
+# ANTHROPIC_API_KEY - Your Anthropic API key for AI recipe suggestions
+
+# Netlify Identity (optional - uncomment to enable)
+# [build.environment]
+#   NETLIFY_USE_EDGE_FUNCTIONS = "true"
