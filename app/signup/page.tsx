@@ -145,16 +145,16 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="bg-white shadow-xl rounded-xl p-8 border-2 border-autumn-200">
-        <h2 className="text-3xl font-bold mb-6 text-harvest-900">
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="bg-white shadow-2xl rounded-2xl p-8">
+        <h2 className="font-display text-4xl font-semibold mb-8 text-terra-900">
           {guestId ? `Welcome, ${formData.name}!` : 'Sign Up for Friendsgiving'}
         </h2>
 
         {!guestId ? (
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="name" className="block text-base font-semibold text-harvest-900 mb-2">
+              <label htmlFor="name" className="block text-base font-semibold text-terra-900 mb-2">
                 Your Name *
               </label>
               <input
@@ -163,12 +163,12 @@ export default function SignupPage() {
                 required
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-4 py-3 border-2 border-autumn-300 rounded-lg focus:ring-2 focus:ring-harvest-500 focus:border-harvest-500 text-lg text-harvest-900 bg-white"
+                className="w-full px-4 py-3 border border-warm-300 rounded-lg focus:ring-2 focus:ring-warm-400 focus:border-warm-500 text-base text-terra-900 bg-white"
               />
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-base font-semibold text-harvest-900 mb-2">
+              <label htmlFor="email" className="block text-base font-semibold text-terra-900 mb-2">
                 Email Address *
               </label>
               <input
@@ -177,19 +177,19 @@ export default function SignupPage() {
                 required
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-4 py-3 border-2 border-autumn-300 rounded-lg focus:ring-2 focus:ring-harvest-500 focus:border-harvest-500 text-lg text-harvest-900 bg-white"
+                className="w-full px-4 py-3 border border-warm-300 rounded-lg focus:ring-2 focus:ring-warm-400 focus:border-warm-500 text-base text-terra-900 bg-white"
               />
             </div>
 
             <div>
-              <label htmlFor="cooking_skill" className="block text-base font-semibold text-harvest-900 mb-2">
+              <label htmlFor="cooking_skill" className="block text-base font-semibold text-terra-900 mb-2">
                 Cooking Skill Level *
               </label>
               <select
                 id="cooking_skill"
                 value={formData.cooking_skill}
                 onChange={(e) => setFormData({ ...formData, cooking_skill: e.target.value as CookingSkill })}
-                className="w-full px-4 py-3 border-2 border-autumn-300 rounded-lg focus:ring-2 focus:ring-harvest-500 focus:border-harvest-500 text-lg text-harvest-900 bg-white"
+                className="w-full px-4 py-3 border border-warm-300 rounded-lg focus:ring-2 focus:ring-warm-400 focus:border-warm-500 text-base text-terra-900 bg-white"
               >
                 <option value="beginner">Beginner - I keep it simple</option>
                 <option value="intermediate">Intermediate - I can handle most recipes</option>
@@ -198,7 +198,7 @@ export default function SignupPage() {
             </div>
 
             <div>
-              <label htmlFor="dietary_restrictions" className="block text-base font-semibold text-harvest-900 mb-2">
+              <label htmlFor="dietary_restrictions" className="block text-base font-semibold text-terra-900 mb-2">
                 Dietary Restrictions (optional)
               </label>
               <input
@@ -207,12 +207,12 @@ export default function SignupPage() {
                 placeholder="e.g., vegetarian, gluten-free, nut-free"
                 value={formData.dietary_restrictions}
                 onChange={(e) => setFormData({ ...formData, dietary_restrictions: e.target.value })}
-                className="w-full px-4 py-3 border-2 border-autumn-300 rounded-lg focus:ring-2 focus:ring-harvest-500 focus:border-harvest-500 text-lg text-harvest-900 bg-white placeholder:text-harvest-400"
+                className="w-full px-4 py-3 border border-warm-300 rounded-lg focus:ring-2 focus:ring-warm-400 focus:border-warm-500 text-base text-terra-900 bg-white placeholder:text-terra-400"
               />
             </div>
 
             {error && (
-              <div className="bg-cranberry-50 border-2 border-cranberry-400 text-cranberry-900 px-4 py-3 rounded-lg font-medium">
+              <div className="bg-warm-50 border border-warm-400 text-warm-900 px-4 py-3 rounded-lg font-medium">
                 {error}
               </div>
             )}
@@ -220,7 +220,7 @@ export default function SignupPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-harvest-600 text-white py-4 px-6 rounded-lg hover:bg-harvest-700 disabled:bg-gray-400 disabled:cursor-not-allowed font-bold text-lg shadow-lg transform hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
+              className="w-full bg-gradient-to-r from-warm-500 to-warm-600 text-white py-4 px-6 rounded-full hover:from-warm-600 hover:to-warm-700 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
@@ -238,23 +238,23 @@ export default function SignupPage() {
         ) : (
           <div className="space-y-6">
             {claimedDishes.length > 0 && (
-              <div className="bg-harvest-50 border-2 border-harvest-400 rounded-lg p-5">
-                <div className="flex items-center gap-2 mb-3">
-                  <CheckCircle className="w-6 h-6 text-harvest-700" />
-                  <h3 className="font-bold text-harvest-900 text-lg">Your Claimed Dishes</h3>
+              <div className="bg-sage-50 border border-sage-300 rounded-xl p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <CheckCircle className="w-6 h-6 text-sage-700" />
+                  <h3 className="font-semibold text-terra-900 text-lg">Your Claimed Dishes</h3>
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {claimedDishes.map((dish, index) => (
                     <div key={index}>
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center text-harvest-800 font-medium">
-                          <CheckCircle className="w-5 h-5 text-harvest-600 mr-2 flex-shrink-0" />
+                        <div className="flex items-center text-terra-800 font-medium">
+                          <CheckCircle className="w-5 h-5 text-sage-600 mr-2 flex-shrink-0" />
                           <span>{dish.dish_name}</span>
                         </div>
                         {dish.recipe && (
                           <button
                             onClick={() => setExpandedRecipe(expandedRecipe === dish.dish_name ? null : dish.dish_name)}
-                            className="text-sm text-harvest-600 hover:text-harvest-700 underline flex items-center gap-1"
+                            className="text-sm text-warm-600 hover:text-warm-700 underline flex items-center gap-1"
                           >
                             <ChefHat className="w-4 h-4" />
                             {expandedRecipe === dish.dish_name ? 'Hide Recipe' : 'View Recipe'}
@@ -262,15 +262,15 @@ export default function SignupPage() {
                         )}
                       </div>
                       {dish.recipe && expandedRecipe === dish.dish_name && (
-                        <div className="mt-3 pl-7 bg-white rounded-lg p-4 border border-harvest-300">
-                          <h4 className="font-bold text-harvest-900 mb-2">Ingredients:</h4>
-                          <ul className="list-disc list-inside mb-4 text-harvest-800 space-y-1">
+                        <div className="mt-3 pl-7 bg-white rounded-lg p-4 border border-warm-200">
+                          <h4 className="font-semibold text-terra-900 mb-2">Ingredients:</h4>
+                          <ul className="list-disc list-inside mb-4 text-terra-800 space-y-1">
                             {dish.recipe.ingredients.map((ing, i) => (
                               <li key={i}>{ing}</li>
                             ))}
                           </ul>
-                          <h4 className="font-bold text-harvest-900 mb-2">Instructions:</h4>
-                          <ol className="list-decimal list-inside text-harvest-800 space-y-2">
+                          <h4 className="font-semibold text-terra-900 mb-2">Instructions:</h4>
+                          <ol className="list-decimal list-inside text-terra-800 space-y-2">
                             {dish.recipe.instructions.map((step, i) => (
                               <li key={i}>{step}</li>
                             ))}
@@ -284,17 +284,17 @@ export default function SignupPage() {
             )}
 
             {error && (
-              <div className="bg-cranberry-50 border-2 border-cranberry-400 text-cranberry-900 px-4 py-3 rounded-lg font-medium">
+              <div className="bg-warm-50 border border-warm-400 text-warm-900 px-4 py-3 rounded-lg font-medium">
                 {error}
               </div>
             )}
 
             <div>
-              <h3 className="text-2xl font-bold text-harvest-900 mb-4">Choose Your Dish</h3>
+              <h3 className="font-display text-2xl font-semibold text-terra-900 mb-4">Choose Your Dish</h3>
               <div className="grid gap-4">
                 <button
                   onClick={() => setShowCustomForm(!showCustomForm)}
-                  className="w-full p-5 bg-cranberry-600 text-white rounded-lg hover:bg-cranberry-700 transition-all shadow-md font-bold text-lg flex items-center justify-center gap-2"
+                  className="w-full p-5 bg-gradient-to-r from-terra-500 to-terra-600 text-white rounded-xl hover:from-terra-600 hover:to-terra-700 transition-all shadow-md font-semibold text-lg flex items-center justify-center gap-2"
                 >
                   {showCustomForm ? (
                     <>
@@ -312,11 +312,11 @@ export default function SignupPage() {
             </div>
 
             {showCustomForm ? (
-              <form onSubmit={handleCustomDishSubmit} className="bg-autumn-50 border-2 border-autumn-300 rounded-lg p-6 space-y-4">
-                <h4 className="text-xl font-bold text-harvest-900 mb-4">Add Your Own Dish</h4>
+              <form onSubmit={handleCustomDishSubmit} className="bg-warm-50 border border-warm-300 rounded-xl p-6 space-y-4">
+                <h4 className="text-xl font-semibold text-terra-900 mb-4">Add Your Own Dish</h4>
 
                 <div>
-                  <label htmlFor="custom_dish_name" className="block text-base font-semibold text-harvest-900 mb-2">
+                  <label htmlFor="custom_dish_name" className="block text-base font-semibold text-terra-900 mb-2">
                     Dish Name *
                   </label>
                   <input
@@ -326,19 +326,19 @@ export default function SignupPage() {
                     value={customDish.dish_name}
                     onChange={(e) => setCustomDish({ ...customDish, dish_name: e.target.value })}
                     placeholder="e.g., Grandma's Famous Apple Pie"
-                    className="w-full px-4 py-3 border-2 border-autumn-400 rounded-lg focus:ring-2 focus:ring-harvest-500 focus:border-harvest-500 text-lg text-harvest-900 bg-white placeholder:text-harvest-400"
+                    className="w-full px-4 py-3 border border-warm-300 rounded-lg focus:ring-2 focus:ring-warm-400 focus:border-warm-500 text-base text-terra-900 bg-white placeholder:text-terra-400"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="custom_category" className="block text-base font-semibold text-harvest-900 mb-2">
+                  <label htmlFor="custom_category" className="block text-base font-semibold text-terra-900 mb-2">
                     Category *
                   </label>
                   <select
                     id="custom_category"
                     value={customDish.category}
                     onChange={(e) => setCustomDish({ ...customDish, category: e.target.value as DishCategory })}
-                    className="w-full px-4 py-3 border-2 border-autumn-400 rounded-lg focus:ring-2 focus:ring-harvest-500 focus:border-harvest-500 text-lg text-harvest-900 bg-white"
+                    className="w-full px-4 py-3 border border-warm-300 rounded-lg focus:ring-2 focus:ring-warm-400 focus:border-warm-500 text-base text-terra-900 bg-white"
                   >
                     <option value="appetizer">Appetizer</option>
                     <option value="main">Main Course</option>
@@ -349,7 +349,7 @@ export default function SignupPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="custom_serves" className="block text-base font-semibold text-harvest-900 mb-2">
+                  <label htmlFor="custom_serves" className="block text-base font-semibold text-terra-900 mb-2">
                     Serves (number of people)
                   </label>
                   <input
@@ -359,14 +359,14 @@ export default function SignupPage() {
                     max="50"
                     value={customDish.serves}
                     onChange={(e) => setCustomDish({ ...customDish, serves: parseInt(e.target.value) })}
-                    className="w-full px-4 py-3 border-2 border-autumn-400 rounded-lg focus:ring-2 focus:ring-harvest-500 focus:border-harvest-500 text-lg text-harvest-900 bg-white"
+                    className="w-full px-4 py-3 border border-warm-300 rounded-lg focus:ring-2 focus:ring-warm-400 focus:border-warm-500 text-base text-terra-900 bg-white"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-harvest-600 text-white py-3 px-6 rounded-lg hover:bg-harvest-700 disabled:bg-gray-400 font-bold text-lg shadow-md"
+                  className="w-full bg-gradient-to-r from-warm-500 to-warm-600 text-white py-3 px-6 rounded-full hover:from-warm-600 hover:to-warm-700 disabled:from-gray-400 disabled:to-gray-400 font-semibold text-lg shadow-md"
                 >
                   {loading ? 'Adding Dish...' : 'Claim This Dish'}
                 </button>
@@ -375,13 +375,13 @@ export default function SignupPage() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <Sparkles className="w-6 h-6 text-harvest-600" />
-                    <h4 className="text-xl font-bold text-harvest-900">AI-Powered Suggestions For You</h4>
+                    <Sparkles className="w-6 h-6 text-warm-600" />
+                    <h4 className="text-xl font-semibold text-terra-900">AI-Powered Suggestions For You</h4>
                   </div>
                   <button
                     onClick={fetchSuggestions}
                     disabled={loadingSuggestions}
-                    className="flex items-center gap-2 px-4 py-2 bg-harvest-100 text-harvest-700 rounded-lg hover:bg-harvest-200 disabled:bg-gray-200 disabled:text-gray-500 font-semibold transition-all"
+                    className="flex items-center gap-2 px-4 py-2 bg-sky-50 text-sky-700 rounded-lg hover:bg-sky-100 disabled:bg-gray-200 disabled:text-gray-500 font-semibold transition-all border border-sky-200"
                   >
                     <RefreshCw className={`w-4 h-4 ${loadingSuggestions ? 'animate-spin' : ''}`} />
                     Load More
@@ -389,22 +389,22 @@ export default function SignupPage() {
                 </div>
 
                 {loadingSuggestions ? (
-                  <div className="flex flex-col items-center justify-center py-12 text-harvest-600">
+                  <div className="flex flex-col items-center justify-center py-12 text-warm-600">
                     <Loader2 className="w-12 h-12 animate-spin mb-3" />
                     <p className="text-lg font-medium">Finding perfect recipes for you...</p>
                   </div>
                 ) : suggestions.length === 0 ? (
-                  <div className="text-center py-8 text-harvest-600">
+                  <div className="text-center py-8 text-terra-600">
                     <p>No suggestions yet. Click &quot;Load More&quot; to get started!</p>
                   </div>
                 ) : (
                   suggestions.map((suggestion, index) => (
-                    <div key={index} className="border-2 border-autumn-300 rounded-lg p-5 bg-white hover:border-harvest-400 transition-all">
+                    <div key={index} className="border border-warm-200 rounded-xl p-6 bg-white hover:border-warm-400 hover:shadow-md transition-all">
                       <div className="flex justify-between items-start mb-3 gap-4">
                         <div className="flex-1">
-                          <h3 className="font-bold text-xl text-harvest-900 mb-1">{suggestion.recipe_name}</h3>
-                          <p className="text-base text-harvest-700">
-                            <span className="capitalize font-semibold">{suggestion.category}</span> •
+                          <h3 className="font-semibold text-xl text-terra-900 mb-1">{suggestion.recipe_name}</h3>
+                          <p className="text-base text-terra-700">
+                            <span className="capitalize font-medium">{suggestion.category}</span> •
                             <span className="capitalize"> {suggestion.difficulty}</span> •
                             <span> Serves {suggestion.serves}</span>
                           </p>
@@ -416,32 +416,32 @@ export default function SignupPage() {
                             serves: suggestion.serves
                           }, suggestion)}
                           disabled={loading || claimedDishes.some(d => d.dish_name === suggestion.recipe_name)}
-                          className="bg-harvest-600 text-white px-6 py-3 rounded-lg hover:bg-harvest-700 disabled:bg-gray-400 disabled:cursor-not-allowed font-bold shadow-md whitespace-nowrap"
+                          className="bg-gradient-to-r from-warm-500 to-warm-600 text-white px-6 py-3 rounded-full hover:from-warm-600 hover:to-warm-700 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed font-semibold shadow-md whitespace-nowrap"
                         >
                           {claimedDishes.some(d => d.dish_name === suggestion.recipe_name) ? 'Claimed' : 'Claim This'}
                         </button>
                       </div>
-                      <p className="text-harvest-800 mb-3 text-base">{suggestion.reasoning}</p>
-                      <p className="text-harvest-700 text-sm mb-3">
+                      <p className="text-terra-800 mb-3 text-base">{suggestion.reasoning}</p>
+                      <p className="text-terra-700 text-sm mb-3">
                         <strong>Key ingredients:</strong> {suggestion.ingredients_summary}
                       </p>
 
-                      <details className="bg-autumn-50 rounded-lg p-4 border border-autumn-200">
-                        <summary className="cursor-pointer font-semibold text-harvest-900 hover:text-harvest-700">
+                      <details className="bg-cream-100 rounded-lg p-4 border border-warm-200">
+                        <summary className="cursor-pointer font-semibold text-terra-900 hover:text-warm-700">
                           View Full Recipe
                         </summary>
                         <div className="mt-3 space-y-3">
                           <div>
-                            <h5 className="font-bold text-harvest-900 mb-2">Ingredients:</h5>
-                            <ul className="list-disc list-inside text-harvest-800 space-y-1">
+                            <h5 className="font-semibold text-terra-900 mb-2">Ingredients:</h5>
+                            <ul className="list-disc list-inside text-terra-800 space-y-1">
                               {suggestion.ingredients.map((ing, i) => (
                                 <li key={i}>{ing}</li>
                               ))}
                             </ul>
                           </div>
                           <div>
-                            <h5 className="font-bold text-harvest-900 mb-2">Instructions:</h5>
-                            <ol className="list-decimal list-inside text-harvest-800 space-y-2">
+                            <h5 className="font-semibold text-terra-900 mb-2">Instructions:</h5>
+                            <ol className="list-decimal list-inside text-terra-800 space-y-2">
                               {suggestion.instructions.map((step, i) => (
                                 <li key={i}>{step}</li>
                               ))}
@@ -458,7 +458,7 @@ export default function SignupPage() {
             <div className="text-center pt-4">
               <a
                 href="/dashboard"
-                className="inline-flex items-center gap-2 bg-white border-2 border-harvest-500 text-harvest-700 px-6 py-3 rounded-lg hover:bg-harvest-50 font-semibold"
+                className="inline-flex items-center gap-2 bg-white border border-terra-400 text-terra-700 px-6 py-3 rounded-xl hover:bg-terra-50 hover:border-terra-500 font-semibold transition-all shadow-sm"
               >
                 <ExternalLink className="w-5 h-5" />
                 View Full Menu & Guest List
