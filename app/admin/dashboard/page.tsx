@@ -277,9 +277,10 @@ export default function AdminDashboard() {
             <thead>
               <tr className="border-b-2 border-autumn-300">
                 <th className="px-4 py-3 text-left text-sm font-bold text-harvest-900">Name</th>
-                <th className="px-4 py-3 text-left text-sm font-bold text-harvest-900">Email</th>
+                <th className="px-4 py-3 text-left text-sm font-bold text-harvest-900">Phone</th>
                 <th className="px-4 py-3 text-left text-sm font-bold text-harvest-900">Skill</th>
                 <th className="px-4 py-3 text-left text-sm font-bold text-harvest-900">Restrictions</th>
+                <th className="px-4 py-3 text-left text-sm font-bold text-harvest-900">Partner</th>
                 <th className="px-4 py-3 text-left text-sm font-bold text-harvest-900">Actions</th>
               </tr>
             </thead>
@@ -301,13 +302,26 @@ export default function AdminDashboard() {
                   <td className="px-4 py-3">
                     {editingGuest === guest.id ? (
                       <input
-                        type="email"
-                        defaultValue={guest.email}
-                        onBlur={(e) => handleUpdateGuest(guest.id, { email: e.target.value })}
+                        type="tel"
+                        defaultValue={guest.phone_number}
+                        pattern="[0-9]{10,15}"
+                        title="Please enter a valid phone number (10-15 digits, numbers only)"
+                        onBlur={(e) => {
+                          const value = e.target.value.replace(/[^0-9]/g, '');
+                          if (value.length >= 10 && value.length <= 15) {
+                            handleUpdateGuest(guest.id, { phone_number: value });
+                          } else {
+                            alert('Phone number must be 10-15 digits');
+                            e.target.focus();
+                          }
+                        }}
+                        onChange={(e) => {
+                          e.target.value = e.target.value.replace(/[^0-9]/g, '');
+                        }}
                         className="px-2 py-1 border rounded text-harvest-900"
                       />
                     ) : (
-                      <span className="text-harvest-800">{guest.email}</span>
+                      <span className="text-harvest-800">{guest.phone_number}</span>
                     )}
                   </td>
                   <td className="px-4 py-3">
@@ -327,6 +341,18 @@ export default function AdminDashboard() {
                   </td>
                   <td className="px-4 py-3 text-harvest-700 text-sm">
                     {guest.dietary_restrictions.join(', ') || 'None'}
+                  </td>
+                  <td className="px-4 py-3">
+                    {editingGuest === guest.id ? (
+                      <input
+                        type="checkbox"
+                        defaultChecked={guest.bringing_partner}
+                        onChange={(e) => handleUpdateGuest(guest.id, { bringing_partner: e.target.checked })}
+                        className="w-5 h-5 text-harvest-600 rounded"
+                      />
+                    ) : (
+                      <span className="text-harvest-800">{guest.bringing_partner ? 'Yes' : 'No'}</span>
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2">

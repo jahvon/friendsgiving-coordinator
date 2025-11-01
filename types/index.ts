@@ -5,10 +5,11 @@ export type DishStatus = 'claimed' | 'preparing' | 'confirmed';
 export interface Guest {
   id: string;
   name: string;
-  email: string;
+  phone_number: string;
   cooking_skill: CookingSkill;
   dietary_restrictions: string[];
   dish_claimed: boolean;
+  bringing_partner: boolean;
   created_at: string;
 }
 

@@ -33,6 +33,11 @@ export async function addGuest(guest: Omit<Guest, 'id' | 'created_at'>): Promise
   return newGuest;
 }
 
+export async function findGuestByPhone(phoneNumber: string): Promise<Guest | null> {
+  const guests = await getGuests();
+  return guests.find(g => g.phone_number === phoneNumber) || null;
+}
+
 export async function updateGuest(id: string, updates: Partial<Guest>): Promise<Guest | null> {
   const guests = await getGuests();
   const index = guests.findIndex(g => g.id === id);

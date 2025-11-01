@@ -55,8 +55,15 @@ export default function DashboardPage() {
         <div className="grid md:grid-cols-2 gap-6 mb-6">
           <div className="bg-gradient-to-br from-sky-50 to-sky-100 p-6 rounded-xl border border-sky-200">
             <Users className="w-10 h-10 mb-3 text-sky-700" />
-            <p className="text-4xl font-bold text-terra-900">{data.guests.length}</p>
+            <p className="text-4xl font-bold text-terra-900">
+              {data.guests.length + data.guests.filter(g => g.bringing_partner).length}
+            </p>
             <p className="text-base text-terra-700 font-semibold">Guests Joining</p>
+            {data.guests.filter(g => g.bringing_partner).length > 0 && (
+              <p className="text-sm text-terra-600 mt-1">
+                ({data.guests.length} guests + {data.guests.filter(g => g.bringing_partner).length} partner{data.guests.filter(g => g.bringing_partner).length !== 1 ? 's' : ''})
+              </p>
+            )}
           </div>
 
           <div className="bg-gradient-to-br from-warm-50 to-warm-100 p-6 rounded-xl border border-warm-200">
@@ -181,9 +188,6 @@ export default function DashboardPage() {
                     Name
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-terra-900 uppercase">
-                    Email
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-terra-900 uppercase">
                     Cooking Skill
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-terra-900 uppercase">
@@ -198,7 +202,6 @@ export default function DashboardPage() {
                 {data.guests.map((guest) => (
                   <tr key={guest.id} className="hover:bg-cream-100 transition-colors">
                     <td className="px-4 py-4 text-base text-terra-900 font-medium">{guest.name}</td>
-                    <td className="px-4 py-4 text-base text-terra-700">{guest.email}</td>
                     <td className="px-4 py-4 text-base text-terra-800 capitalize">{guest.cooking_skill}</td>
                     <td className="px-4 py-4 text-base text-terra-700">
                       {guest.dietary_restrictions.length > 0

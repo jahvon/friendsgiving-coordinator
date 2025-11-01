@@ -63,7 +63,7 @@ export default function Home() {
                 className="inline-flex items-center gap-3 px-10 py-5 bg-gradient-to-r from-warm-500 to-warm-600 text-white rounded-full hover:from-warm-600 hover:to-warm-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-lg font-semibold"
               >
                 <ChefHat className="w-6 h-6" />
-                Sign Up & Choose Your Dish
+                RSVP & Choose Your Dish
               </Link>
             </div>
           </div>
@@ -82,7 +82,7 @@ export default function Home() {
                 1
               </div>
               <div className="pt-1">
-                <p className="font-semibold text-lg mb-1 text-terra-900">Sign Up</p>
+                <p className="font-semibold text-lg mb-1 text-terra-900">RSVP</p>
                 <p className="text-terra-700 leading-relaxed">Tell us about your cooking skills and any dietary restrictions</p>
               </div>
             </li>

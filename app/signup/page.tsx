@@ -12,9 +12,10 @@ interface ClaimedDishWithRecipe {
 export default function SignupPage() {
   const [formData, setFormData] = useState({
     name: '',
-    email: '',
+    phone_number: '',
     cooking_skill: 'intermediate' as CookingSkill,
     dietary_restrictions: '',
+    bringing_partner: false,
   });
   const [guestId, setGuestId] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<RecipeSuggestion[]>([]);
@@ -29,6 +30,9 @@ export default function SignupPage() {
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [expandedRecipe, setExpandedRecipe] = useState<string | null>(null);
+  const [lookupPhone, setLookupPhone] = useState('');
+  const [lookupLoading, setLookupLoading] = useState(false);
+  const [showLookupForm, setShowLookupForm] = useState(false);
 
   const fetchSuggestions = async () => {
     setLoadingSuggestions(true);
@@ -72,12 +76,13 @@ export default function SignupPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: formData.name,
-          email: formData.email,
+          phone_number: formData.phone_number,
           cooking_skill: formData.cooking_skill,
           dietary_restrictions: formData.dietary_restrictions
             .split(',')
             .map(r => r.trim())
             .filter(Boolean),
+          bringing_partner: formData.bringing_partner,
         }),
       });
 
@@ -144,15 +149,100 @@ export default function SignupPage() {
     handleClaimDish(customDish);
   };
 
+  const handleLookupRSVP = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLookupLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/guests?phone=${encodeURIComponent(lookupPhone)}`);
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'RSVP not found');
+      }
+
+      const guest = await response.json();
+      setGuestId(guest.id);
+      setFormData({
+        name: guest.name,
+        phone_number: guest.phone_number,
+        cooking_skill: guest.cooking_skill,
+        dietary_restrictions: guest.dietary_restrictions.join(', '),
+        bringing_partner: guest.bringing_partner,
+      });
+
+      // Fetch suggestions for existing user
+      await fetchSuggestions();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to find RSVP');
+    } finally {
+      setLookupLoading(false);
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="bg-white shadow-2xl rounded-2xl p-8">
         <h2 className="font-display text-4xl font-semibold mb-8 text-terra-900">
-          {guestId ? `Welcome, ${formData.name}!` : 'Sign Up for Friendsgiving'}
+          {guestId ? `Welcome, ${formData.name}!` : 'RSVP for Friendsgiving'}
         </h2>
 
         {!guestId ? (
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <>
+            {/* Existing RSVP Lookup Section */}
+            <div className="mb-8 bg-sky-50 border-2 border-sky-200 rounded-xl p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-semibold text-terra-900">Already RSVP'd?</h3>
+                <button
+                  onClick={() => setShowLookupForm(!showLookupForm)}
+                  className="text-sky-700 hover:text-sky-800 font-semibold text-sm"
+                >
+                  {showLookupForm ? 'Hide' : 'View/Edit Your RSVP'}
+                </button>
+              </div>
+
+              {showLookupForm && (
+                <form onSubmit={handleLookupRSVP} className="space-y-4">
+                  <div>
+                    <label htmlFor="lookup_phone" className="block text-base font-semibold text-terra-900 mb-2">
+                      Enter Your Phone Number
+                    </label>
+                    <input
+                      type="tel"
+                      id="lookup_phone"
+                      required
+                      placeholder="5551234567"
+                      pattern="[0-9]{10,15}"
+                      value={lookupPhone}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/[^0-9]/g, '');
+                        setLookupPhone(value);
+                      }}
+                      className="w-full px-4 py-3 border border-sky-300 rounded-lg focus:ring-2 focus:ring-sky-400 focus:border-sky-500 text-base text-terra-900 bg-white"
+                    />
+                  </div>
+
+                  {error && showLookupForm && (
+                    <div className="bg-warm-50 border border-warm-400 text-warm-900 px-4 py-3 rounded-lg font-medium">
+                      {error}
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={lookupLoading}
+                    className="w-full bg-sky-600 text-white py-3 px-6 rounded-full hover:bg-sky-700 disabled:bg-gray-400 font-semibold text-lg shadow-md"
+                  >
+                    {lookupLoading ? 'Looking up...' : 'Find My RSVP'}
+                  </button>
+                </form>
+              )}
+            </div>
+
+            {/* New RSVP Form */}
+            <h3 className="text-2xl font-semibold text-terra-900 mb-4">New RSVP</h3>
+            <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="name" className="block text-base font-semibold text-terra-900 mb-2">
                 Your Name *
@@ -168,17 +258,25 @@ export default function SignupPage() {
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-base font-semibold text-terra-900 mb-2">
-                Email Address *
+              <label htmlFor="phone_number" className="block text-base font-semibold text-terra-900 mb-2">
+                Phone Number *
               </label>
               <input
-                type="email"
-                id="email"
+                type="tel"
+                id="phone_number"
                 required
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                placeholder="5551234567"
+                pattern="[0-9]{10,15}"
+                title="Please enter a valid phone number (10-15 digits, numbers only)"
+                value={formData.phone_number}
+                onChange={(e) => {
+                  // Only allow numbers
+                  const value = e.target.value.replace(/[^0-9]/g, '');
+                  setFormData({ ...formData, phone_number: value });
+                }}
                 className="w-full px-4 py-3 border border-warm-300 rounded-lg focus:ring-2 focus:ring-warm-400 focus:border-warm-500 text-base text-terra-900 bg-white"
               />
+              <p className="text-sm text-terra-600 mt-1">Enter numbers only (e.g., 5551234567)</p>
             </div>
 
             <div>
@@ -211,7 +309,20 @@ export default function SignupPage() {
               />
             </div>
 
-            {error && (
+            <div className="flex items-center gap-3 bg-cream-100 p-4 rounded-lg border border-warm-200">
+              <input
+                type="checkbox"
+                id="bringing_partner"
+                checked={formData.bringing_partner}
+                onChange={(e) => setFormData({ ...formData, bringing_partner: e.target.checked })}
+                className="w-5 h-5 text-warm-600 rounded focus:ring-2 focus:ring-warm-400 border-warm-300"
+              />
+              <label htmlFor="bringing_partner" className="text-base font-semibold text-terra-900 cursor-pointer">
+                I'd like to bring my partner
+              </label>
+            </div>
+
+            {error && !showLookupForm && (
               <div className="bg-warm-50 border border-warm-400 text-warm-900 px-4 py-3 rounded-lg font-medium">
                 {error}
               </div>
@@ -230,11 +341,12 @@ export default function SignupPage() {
               ) : (
                 <>
                   <Sparkles className="w-5 h-5" />
-                  Get Recipe Suggestions
+                  RSVP & Claim Your Dish
                 </>
               )}
             </button>
           </form>
+          </>
         ) : (
           <div className="space-y-6">
             {claimedDishes.length > 0 && (
