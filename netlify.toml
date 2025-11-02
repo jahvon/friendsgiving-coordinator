@@ -5,13 +5,14 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
-[functions]
-  node_bundler = "esbuild"
+# Scheduled function for SMS reminders (runs every hour)
+[functions."send-reminders"]
+  schedule = "@hourly"
 
 # Environment variables
-# Set these in your Netlify dashboard under Site settings > Environment variables
-# ANTHROPIC_API_KEY - Your Anthropic API key for AI recipe suggestions
-
-# Netlify Identity (optional - uncomment to enable)
-# [build.environment]
-#   NETLIFY_USE_EDGE_FUNCTIONS = "true"
+# Set these in your Netlify dashboard under Site settings > Environment variables:
+# - ANTHROPIC_API_KEY: Your Anthropic API key for AI recipe suggestions
+# - TWILIO_ACCOUNT_SID: Your Twilio Account SID
+# - TWILIO_AUTH_TOKEN: Your Twilio Auth Token
+# - TWILIO_PHONE_NUMBER: Your Twilio phone number (e.g., +15551234567)
+# - NEXT_PUBLIC_APP_URL: Your app URL (e.g., https://your-app.netlify.app)

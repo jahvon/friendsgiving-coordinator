@@ -1,5 +1,5 @@
 import { getStore } from '@netlify/blobs';
-import type { Guest, Dish, EventConfig } from '@/types';
+import type { Guest, Dish, EventConfig, PendingReminder } from '@/types';
 
 // Initialize blob store
 const getDataStore = () => {
@@ -120,14 +120,59 @@ export async function getEventConfig(): Promise<EventConfig> {
       dessert: 3,
       beverage: 2,
     },
+    reminder_delay_hours: 24,
   };
 
-  return (data as EventConfig) || defaultConfig;
+  if (!data) {
+    return defaultConfig;
+  }
+
+  // Merge with defaults to handle missing fields (e.g., reminder_delay_hours on old configs)
+  const config = data as EventConfig;
+  return {
+    ...defaultConfig,
+    ...config,
+    // Ensure reminder_delay_hours exists
+    reminder_delay_hours: config.reminder_delay_hours ?? 24,
+  };
 }
 
 export async function saveEventConfig(config: EventConfig): Promise<void> {
   const store = getDataStore();
   await store.setJSON('event-config', config);
+}
+
+// Reminder operations
+export async function getPendingReminders(): Promise<PendingReminder[]> {
+  const store = getDataStore();
+  const data = await store.get('pending-reminders', { type: 'json' });
+  return (data as PendingReminder[]) || [];
+}
+
+export async function savePendingReminders(reminders: PendingReminder[]): Promise<void> {
+  const store = getDataStore();
+  await store.setJSON('pending-reminders', reminders);
+}
+
+export async function addPendingReminder(reminder: Omit<PendingReminder, 'id' | 'created_at'>): Promise<PendingReminder> {
+  const reminders = await getPendingReminders();
+  const newReminder: PendingReminder = {
+    ...reminder,
+    id: crypto.randomUUID(),
+    created_at: new Date().toISOString(),
+  };
+  reminders.push(newReminder);
+  await savePendingReminders(reminders);
+  return newReminder;
+}
+
+export async function markReminderAsSent(id: string): Promise<void> {
+  const reminders = await getPendingReminders();
+  const index = reminders.findIndex(r => r.id === id);
+  if (index !== -1) {
+    reminders[index].sent = true;
+    await savePendingReminders(reminders);
+  }
 }
 
 // Initialize default data if needed

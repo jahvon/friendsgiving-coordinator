@@ -181,6 +181,36 @@ export default function SignupPage() {
     }
   };
 
+  const handleClaimLater = async () => {
+    if (!guestId) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/reminders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          guest_id: guestId,
+          guest_name: formData.name,
+          phone_number: formData.phone_number,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to schedule reminder');
+      }
+
+      const data = await response.json();
+      alert(`Great! We'll send you a reminder via text message. ${data.message}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to schedule reminder');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="bg-white shadow-2xl rounded-2xl p-8">
@@ -403,7 +433,7 @@ export default function SignupPage() {
 
             <div>
               <h3 className="font-display text-2xl font-semibold text-terra-900 mb-4">Choose Your Dish</h3>
-              <div className="grid gap-4">
+              <div className="grid md:grid-cols-2 gap-4">
                 <button
                   onClick={() => setShowCustomForm(!showCustomForm)}
                   className="w-full p-5 bg-gradient-to-r from-terra-500 to-terra-600 text-white rounded-xl hover:from-terra-600 hover:to-terra-700 transition-all shadow-md font-semibold text-lg flex items-center justify-center gap-2"
@@ -419,6 +449,14 @@ export default function SignupPage() {
                       Bring Your Own Specialty Dish
                     </>
                   )}
+                </button>
+                <button
+                  onClick={handleClaimLater}
+                  disabled={loading}
+                  className="w-full p-5 bg-gradient-to-r from-sky-500 to-sky-600 text-white rounded-xl hover:from-sky-600 hover:to-sky-700 transition-all shadow-md font-semibold text-lg flex items-center justify-center gap-2 disabled:from-gray-400 disabled:to-gray-400"
+                >
+                  <Sparkles className="w-5 h-5" />
+                  Claim Later (Get SMS Reminder)
                 </button>
               </div>
             </div>

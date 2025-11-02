@@ -2,19 +2,21 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Trash2, Edit2, Save, X, LogOut, Shield, Calendar, MapPin, Target } from 'lucide-react';
-import type { Guest, Dish, EventConfig, DishCategory, CookingSkill } from '@/types';
+import { Trash2, Edit2, Save, X, LogOut, Shield, Calendar, MapPin, Target, Bell, Clock, CheckCircle, Send } from 'lucide-react';
+import type { Guest, Dish, EventConfig, DishCategory, CookingSkill, PendingReminder } from '@/types';
 
 export default function AdminDashboard() {
   const router = useRouter();
   const [guests, setGuests] = useState<Guest[]>([]);
   const [dishes, setDishes] = useState<Dish[]>([]);
   const [eventConfig, setEventConfig] = useState<EventConfig | null>(null);
+  const [reminders, setReminders] = useState<PendingReminder[]>([]);
   const [editingGuest, setEditingGuest] = useState<string | null>(null);
   const [editingDish, setEditingDish] = useState<string | null>(null);
   const [editingEvent, setEditingEvent] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [sendingReminder, setSendingReminder] = useState<string | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -22,25 +24,28 @@ export default function AdminDashboard() {
 
   const fetchData = async () => {
     try {
-      const [guestsRes, dishesRes, eventRes] = await Promise.all([
+      const [guestsRes, dishesRes, eventRes, remindersRes] = await Promise.all([
         fetch('/api/guests'),
         fetch('/api/dishes'),
         fetch('/api/admin/event'),
+        fetch('/api/reminders'),
       ]);
 
-      if (!guestsRes.ok || !dishesRes.ok || !eventRes.ok) {
+      if (!guestsRes.ok || !dishesRes.ok || !eventRes.ok || !remindersRes.ok) {
         throw new Error('Failed to fetch data');
       }
 
-      const [guestsData, dishesData, eventData] = await Promise.all([
+      const [guestsData, dishesData, eventData, remindersData] = await Promise.all([
         guestsRes.json(),
         dishesRes.json(),
         eventRes.json(),
+        remindersRes.json(),
       ]);
 
       setGuests(guestsData);
       setDishes(dishesData);
       setEventConfig(eventData);
+      setReminders(remindersData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load data');
     } finally {
@@ -125,6 +130,30 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleSendReminderNow = async (reminderId: string) => {
+    if (!confirm('Are you sure you want to send this reminder now?')) return;
+
+    setSendingReminder(reminderId);
+    try {
+      const response = await fetch(`/api/reminders/${reminderId}/send`, {
+        method: 'POST',
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send reminder');
+      }
+
+      alert('Reminder sent successfully!');
+      fetchData(); // Refresh to show updated status
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to send reminder');
+    } finally {
+      setSendingReminder(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-8">
@@ -170,7 +199,7 @@ export default function AdminDashboard() {
             {!editingEvent ? (
               <button
                 onClick={() => setEditingEvent(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-harvest-600 text-white rounded-lg hover:bg-harvest-700 font-semibold"
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold shadow-md hover:shadow-lg transition-all"
               >
                 <Edit2 className="w-4 h-4" />
                 Edit
@@ -179,7 +208,7 @@ export default function AdminDashboard() {
               <div className="flex gap-2">
                 <button
                   onClick={handleUpdateEvent}
-                  className="flex items-center gap-2 px-4 py-2 bg-harvest-600 text-white rounded-lg hover:bg-harvest-700 font-semibold"
+                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold shadow-md hover:shadow-lg transition-all"
                 >
                   <Save className="w-4 h-4" />
                   Save
@@ -230,6 +259,18 @@ export default function AdminDashboard() {
                 />
               </div>
               <div>
+                <label className="block text-sm font-semibold text-harvest-900 mb-2">Reminder Delay (hours)</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="168"
+                  value={eventConfig.reminder_delay_hours}
+                  onChange={(e) => setEventConfig({ ...eventConfig, reminder_delay_hours: parseInt(e.target.value) })}
+                  className="w-full px-4 py-2 border-2 border-autumn-300 rounded-lg text-harvest-900"
+                />
+                <p className="text-xs text-harvest-700 mt-1">Time delay for &quot;Claim Later&quot; SMS reminders</p>
+              </div>
+              <div>
                 <label className="block text-sm font-semibold text-harvest-900 mb-2">Category Targets</label>
                 <div className="grid md:grid-cols-5 gap-4">
                   {Object.entries(eventConfig.category_targets).map(([category, target]) => (
@@ -262,6 +303,10 @@ export default function AdminDashboard() {
               <div className="flex items-center gap-2 text-harvest-800">
                 <Target className="w-5 h-5 text-harvest-700" />
                 <p><strong>Target Guests:</strong> {eventConfig.target_guest_count}</p>
+              </div>
+              <div className="flex items-center gap-2 text-harvest-800">
+                <Clock className="w-5 h-5 text-harvest-700" />
+                <p><strong>Reminder Delay:</strong> {eventConfig.reminder_delay_hours} hour{eventConfig.reminder_delay_hours !== 1 ? 's' : ''}</p>
               </div>
               <p className="text-harvest-800"><strong>Category Targets:</strong> {Object.entries(eventConfig.category_targets).map(([k, v]) => `${k}: ${v}`).join(', ')}</p>
             </div>
@@ -459,6 +504,86 @@ export default function AdminDashboard() {
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* Pending Reminders */}
+      <div className="bg-white shadow-xl rounded-xl p-6 border-2 border-autumn-200">
+        <div className="flex items-center gap-3 mb-4">
+          <Bell className="w-8 h-8 text-harvest-700" />
+          <h2 className="text-2xl font-bold text-harvest-900">Pending SMS Reminders ({reminders.filter(r => !r.sent).length})</h2>
+        </div>
+
+        {reminders.length === 0 ? (
+          <p className="text-harvest-700 text-center py-8">No reminders scheduled</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full">
+              <thead>
+                <tr className="border-b-2 border-autumn-300">
+                  <th className="px-4 py-3 text-left text-sm font-bold text-harvest-900">Guest</th>
+                  <th className="px-4 py-3 text-left text-sm font-bold text-harvest-900">Phone</th>
+                  <th className="px-4 py-3 text-left text-sm font-bold text-harvest-900">Scheduled For</th>
+                  <th className="px-4 py-3 text-left text-sm font-bold text-harvest-900">Status</th>
+                  <th className="px-4 py-3 text-left text-sm font-bold text-harvest-900">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-autumn-200">
+                {reminders.map((reminder) => {
+                  const scheduledDate = new Date(reminder.scheduled_for);
+                  const isPast = scheduledDate <= new Date();
+
+                  return (
+                    <tr key={reminder.id} className="hover:bg-autumn-50">
+                      <td className="px-4 py-3 text-harvest-900">{reminder.guest_name}</td>
+                      <td className="px-4 py-3 text-harvest-800">{reminder.phone_number}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-4 h-4 text-harvest-600" />
+                          <span className="text-harvest-800">
+                            {scheduledDate.toLocaleString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              hour: 'numeric',
+                              minute: '2-digit',
+                            })}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        {reminder.sent ? (
+                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-semibold bg-sage-200 text-sage-900">
+                            <CheckCircle className="w-4 h-4" />
+                            Sent
+                          </span>
+                        ) : isPast ? (
+                          <span className="px-3 py-1 rounded-full text-sm font-semibold bg-warm-200 text-warm-900">
+                            Sending Soon...
+                          </span>
+                        ) : (
+                          <span className="px-3 py-1 rounded-full text-sm font-semibold bg-sky-200 text-sky-900">
+                            Scheduled
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        {!reminder.sent && (
+                          <button
+                            onClick={() => handleSendReminderNow(reminder.id)}
+                            disabled={sendingReminder === reminder.id}
+                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed font-semibold text-sm shadow-md hover:shadow-lg transition-all"
+                          >
+                            <Send className="w-4 h-4" />
+                            {sendingReminder === reminder.id ? 'Sending...' : 'Send Now'}
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );

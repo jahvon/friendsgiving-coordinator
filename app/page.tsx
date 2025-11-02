@@ -1,7 +1,17 @@
 import Link from 'next/link';
 import { Utensils, Calendar, MapPin, Users, Sparkles, ChefHat } from 'lucide-react';
+import { getEventConfig, getGuests } from '@/lib/storage';
 
-export default function Home() {
+export default async function Home() {
+  const eventConfig = await getEventConfig();
+  const guests = await getGuests();
+
+  // Calculate actual guest count (guests + partners)
+  const guestCount = guests.length;
+  const partnerCount = guests.filter(g => g.bringing_partner).length;
+  const totalAttendees = guestCount + partnerCount;
+  const targetCount = eventConfig.target_guest_count;
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="max-w-4xl w-full space-y-6">
@@ -34,8 +44,19 @@ export default function Home() {
                   <Calendar className="w-7 h-7 text-sky-600" />
                 </div>
                 <h3 className="font-semibold text-lg text-terra-900 mb-2">When</h3>
-                <p className="text-terra-700 text-center font-medium">Thursday, November 28th</p>
-                <p className="text-terra-600 text-sm mt-1">6:00 PM</p>
+                <p className="text-terra-700 text-center font-medium">
+                  {new Date(eventConfig.date).toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
+                </p>
+                <p className="text-terra-600 text-sm mt-1">
+                  {new Date(eventConfig.date).toLocaleTimeString('en-US', {
+                    hour: 'numeric',
+                    minute: '2-digit'
+                  })}
+                </p>
               </div>
 
               <div className="flex flex-col items-center p-6 bg-warm-50 rounded-xl border border-warm-200 hover:shadow-md transition-shadow">
@@ -43,8 +64,7 @@ export default function Home() {
                   <MapPin className="w-7 h-7 text-warm-600" />
                 </div>
                 <h3 className="font-semibold text-lg text-terra-900 mb-2">Where</h3>
-                <p className="text-terra-700 text-center font-medium">123 Harvest Lane</p>
-                <p className="text-terra-600 text-sm mt-1">Oakland, CA</p>
+                <p className="text-terra-700 text-center font-medium">{eventConfig.location}</p>
               </div>
 
               <div className="flex flex-col items-center p-6 bg-sage-50 rounded-xl border border-sage-200 hover:shadow-md transition-shadow">
@@ -53,7 +73,13 @@ export default function Home() {
                 </div>
                 <h3 className="font-semibold text-lg text-terra-900 mb-2">Who</h3>
                 <p className="text-terra-700 text-center font-medium">Friends & Family</p>
-                <p className="text-terra-600 text-sm mt-1">~20 guests expected</p>
+                {guestCount === 0 ? (
+                  <p className="text-terra-600 text-sm mt-1">Be the first to RSVP!</p>
+                ) : guestCount < 3 ? (
+                  <p className="text-terra-600 text-sm mt-1">{totalAttendees} {totalAttendees === 1 ? 'person' : 'people'} attending</p>
+                ) : (
+                  <p className="text-terra-600 text-sm mt-1">{totalAttendees} of {targetCount} guests confirmed</p>
+                )}
               </div>
             </div>
 

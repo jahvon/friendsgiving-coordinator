@@ -30,6 +30,17 @@ export interface EventConfig {
   location: string;
   target_guest_count: number;
   category_targets: Record<DishCategory, number>;
+  reminder_delay_hours: number;
+}
+
+export interface PendingReminder {
+  id: string;
+  guest_id: string;
+  guest_name: string;
+  phone_number: string;
+  scheduled_for: string;
+  sent: boolean;
+  created_at: string;
 }
 
 export interface DashboardData {

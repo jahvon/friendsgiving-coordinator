@@ -6,7 +6,10 @@ A beautiful, AI-powered web app to coordinate your Friendsgiving dinner. Guests 
 
 - **Password-Protected Access**: Separate guest and admin passwords for security
 - **Beautiful Invitation Landing Page**: Warm, welcoming design with event details
-- **Guest Signup**: Simple form to join the event and specify cooking skill level
+- **Phone-Based RSVP System**:
+  - Use phone numbers instead of emails for easy tracking
+  - Look up existing RSVPs to view/edit responses
+  - Partner tracking (guests can indicate if bringing a +1)
 - **Smart Recipe Suggestions**: AI-powered suggestions using Anthropic's Claude, tailored to:
   - Guest's cooking skill level (beginner/intermediate/advanced)
   - Dietary restrictions
@@ -17,21 +20,30 @@ A beautiful, AI-powered web app to coordinate your Friendsgiving dinner. Guests 
   - Add your own specialty dishes
   - Claim multiple dishes if you want to contribute more
   - Load more suggestions for different recipe options
+  - **"Claim Later" SMS Reminders**: Schedule a text reminder to claim dishes later (configurable delay)
 - **Guest Dashboard**: Real-time overview of:
   - All claimed dishes and their recipes
   - Colorful menu balance indicators
-  - Complete guest list
+  - Complete guest list (with privacy - no phone numbers shown)
+  - Total guest count includes partners
 - **Admin Dashboard**: Manage the entire event:
   - Edit and delete guests and dishes
-  - Update event details (date, location, guest count)
+  - View phone numbers and partner status
+  - Update event details (date, location, guest count, SMS reminder delay)
   - Monitor dish category balance
   - View all participants
+- **Automated SMS Reminders**:
+  - Twilio integration for sending text reminders
+  - Configurable delay (default: 24 hours)
+  - Automatic hourly cron job checks for pending reminders
 
 ## Tech Stack
 
 - **Next.js 14+** with TypeScript and App Router
 - **Netlify Blobs** for simple JSON-based data storage
 - **Anthropic API (Claude 3.5 Sonnet)** for intelligent recipe suggestions
+- **Twilio API** for SMS reminders
+- **Netlify Scheduled Functions** for automated reminder sending
 - **Tailwind CSS** with custom color palette for styling
 - **Google Fonts** (Playfair Display & Inter) for typography
 - **Lucide React** for modern icons
@@ -44,6 +56,7 @@ A beautiful, AI-powered web app to coordinate your Friendsgiving dinner. Guests 
 
 - Node.js 18+ and npm
 - Anthropic API key (get one at [https://console.anthropic.com](https://console.anthropic.com))
+- Twilio account with phone number (get one at [https://www.twilio.com](https://www.twilio.com)) - **Optional** for SMS reminders
 - Netlify account (free tier works great)
 
 ### Local Development
@@ -62,12 +75,19 @@ npm install
 cp .env.example .env
 ```
 
-Edit `.env` and add your Anthropic API key and passwords:
+Edit `.env` and add your API keys and passwords:
 
 ```
 ANTHROPIC_API_KEY=your_actual_api_key_here
 GUEST_PASSWORD=your_guest_password_here
 ADMIN_PASSWORD=your_admin_password_here
+
+# Optional - For SMS reminders
+TWILIO_ACCOUNT_SID=your_twilio_account_sid
+TWILIO_AUTH_TOKEN=your_twilio_auth_token
+TWILIO_PHONE_NUMBER=+15551234567
+CRON_SECRET=your_random_secret_string
+NEXT_PUBLIC_APP_URL=http://localhost:8888
 ```
 
 3. **Install Netlify CLI (for local blob storage emulation):**
@@ -100,8 +120,16 @@ The app will be available at `http://localhost:8888`
 
 3. **Configure environment variables:**
    - In your site dashboard, go to "Site settings" -> "Environment variables"
-   - Add: `ANTHROPIC_API_KEY` with your API key value
-   - Add: `GUEST_PASSWORD` and `ADMIN_PASSWORD` with your desired passwords
+   - **Required:**
+     - `ANTHROPIC_API_KEY`: Your Anthropic API key
+     - `GUEST_PASSWORD`: Password for guest access
+     - `ADMIN_PASSWORD`: Password for admin access
+   - **Optional (for SMS reminders):**
+     - `TWILIO_ACCOUNT_SID`: Your Twilio Account SID
+     - `TWILIO_AUTH_TOKEN`: Your Twilio Auth Token
+     - `TWILIO_PHONE_NUMBER`: Your Twilio phone number (e.g., +15551234567)
+     - `CRON_SECRET`: Random secret string to secure the cron endpoint
+     - `NEXT_PUBLIC_APP_URL`: Your deployed app URL (e.g., https://your-app.netlify.app)
 
 4. **Deploy:**
    - Click "Deploy site"
@@ -144,16 +172,20 @@ netlify deploy --prod
 
 1. **Access the site**: Navigate to the home page and enter the guest password
 2. **View the invitation**: See the beautiful event details (date, location, expected guests)
-3. **Sign up**: Click "Sign Up & Choose Your Dish"
-4. **Fill out your info**:
-   - Your name and email
+3. **RSVP Options**:
+   - **New RSVP**: Click "RSVP & Choose Your Dish"
+   - **Existing RSVP**: Click "View/Edit Your RSVP" and enter your phone number
+4. **Fill out your info** (new RSVP):
+   - Your name and phone number (numbers only)
    - Select your cooking skill level (beginner/intermediate/advanced)
    - Add any dietary restrictions (optional)
+   - Check "I'd like to bring my partner" if bringing a +1
 5. **Get suggestions**: AI will generate personalized recipe suggestions
 6. **Browse options**:
    - View full recipes with ingredients and instructions
    - Click "Load More" for different suggestions
-   - Or click "Bring Your Own Specialty Dish" to add your own
+   - Click "Bring Your Own Specialty Dish" to add your own
+   - Click "Claim Later (Get SMS Reminder)" to get a text reminder to choose later
 7. **Claim dishes**: Click "Claim This" on recipes you want to make
 8. **Claim multiple**: You can claim as many dishes as you'd like!
 9. **View your recipes**: Access full cooking instructions for all claimed dishes
@@ -162,16 +194,19 @@ netlify deploy --prod
 
 1. **Access admin panel**: Click "Host dashboard" and enter the admin password
 2. **Manage the event**:
-   - **Edit event details**: Update date, location, or guest count
-   - **Manage guests**: Edit names, emails, skills, or delete guests
+   - **Edit event details**: Update date, location, guest count, or SMS reminder delay
+   - **Manage guests**: Edit names, phone numbers, skills, partner status, or delete guests
    - **Manage dishes**: Edit dish details or remove dishes
    - **Monitor balance**: See colorful progress bars for each category
      - Green: Category goal met
      - Orange: Halfway there
      - Blue: Needs more dishes
 3. **View complete data**:
-   - All guests with their info and claimed status
+   - All guests with their phone numbers, partner status, and claimed status
    - All dishes with guest names, categories, and servings
+4. **Configure SMS reminders**:
+   - Set the reminder delay in hours (default: 24 hours)
+   - Guests who click "Claim Later" will receive a text reminder after this delay
 
 ### Configuring the Event
 
@@ -191,6 +226,7 @@ The event config is stored in Netlify Blobs with the key `"event-config"`:
   "date": "2024-11-28T00:00:00.000Z",
   "location": "123 Harvest Lane, Oakland, CA",
   "target_guest_count": 20,
+  "reminder_delay_hours": 24,
   "category_targets": {
     "appetizer": 3,
     "main": 2,
@@ -210,15 +246,27 @@ To modify via CLI:
 
 This app uses Netlify Blobs for data persistence. Data is stored as JSON blobs:
 
-- **`guests`**: Array of guest objects
+- **`guests`**: Array of guest objects (with phone numbers and partner status)
 - **`dishes`**: Array of dish objects
-- **`event-config`**: Event configuration object
+- **`event-config`**: Event configuration object (includes reminder delay)
+- **`pending-reminders`**: Array of scheduled SMS reminders
 
 Netlify Blobs provides:
 - **Strong consistency**: Reads reflect the latest writes
 - **Automatic backups**: Built into Netlify infrastructure
 - **No database setup**: Works out of the box on Netlify
 - **Free tier**: Generous limits for small events
+
+### SMS Reminder System
+
+The app uses Twilio for sending SMS reminders and Netlify Scheduled Functions for automation:
+
+1. **Guest clicks "Claim Later"**: A reminder is scheduled based on the configured delay
+2. **Scheduled function runs hourly**: Checks for pending reminders that are due
+3. **SMS sent via Twilio**: Guests receive a text with a link to claim their dish
+4. **Reminder marked as sent**: Prevents duplicate messages
+
+The cron job is configured in `netlify.toml` to run every hour automatically.
 
 ## Customization
 
