@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Trash2, Edit2, Save, X, LogOut, Shield, Calendar, MapPin, Target, Bell, Clock, CheckCircle, Send } from 'lucide-react';
+import { Trash2, Edit2, Save, X, LogOut, Shield, Calendar, MapPin, Target, Bell, Clock, CheckCircle, Send, MessageSquare } from 'lucide-react';
 import type { Guest, Dish, EventConfig, DishCategory, CookingSkill, PendingReminder } from '@/types';
 
 export default function AdminDashboard() {
@@ -18,6 +18,9 @@ export default function AdminDashboard() {
   const [error, setError] = useState<string | null>(null);
   const [sendingReminder, setSendingReminder] = useState<string | null>(null);
   const [newRequest, setNewRequest] = useState({ dish_name: '', category: 'side' as DishCategory });
+  const [massMessage, setMassMessage] = useState('');
+  const [sendingMassSMS, setSendingMassSMS] = useState(false);
+  const [massSMSResult, setMassSMSResult] = useState<{ sent: number; failed: number; errors: string[] } | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -178,6 +181,51 @@ export default function AdminDashboard() {
       alert(err instanceof Error ? err.message : 'Failed to send reminder');
     } finally {
       setSendingReminder(null);
+    }
+  };
+
+  const handleSendMassSMS = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!massMessage.trim()) {
+      alert('Please enter a message');
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to send this message to all ${guests.length} guests?`)) {
+      return;
+    }
+
+    setSendingMassSMS(true);
+    setMassSMSResult(null);
+
+    try {
+      const response = await fetch('/api/admin/mass-sms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: massMessage }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send messages');
+      }
+
+      setMassSMSResult({
+        sent: data.sent,
+        failed: data.failed,
+        errors: data.errors || [],
+      });
+
+      if (data.sent > 0) {
+        alert(`Successfully sent ${data.sent} message(s)!${data.failed > 0 ? ` ${data.failed} failed.` : ''}`);
+        setMassMessage('');
+      }
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to send messages');
+    } finally {
+      setSendingMassSMS(false);
     }
   };
 
@@ -585,6 +633,71 @@ export default function AdminDashboard() {
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* Mass SMS */}
+      <div className="bg-white shadow-xl rounded-xl p-6 border-2 border-autumn-200">
+        <div className="flex items-center gap-3 mb-4">
+          <MessageSquare className="w-8 h-8 text-sky-700" />
+          <h2 className="text-2xl font-bold text-harvest-900">Send Mass Text Message</h2>
+        </div>
+
+        <p className="text-harvest-700 mb-4">
+          Send a custom text message to all {guests.length} guests who have RSVP&apos;d.
+        </p>
+
+        <form onSubmit={handleSendMassSMS} className="space-y-4">
+          <div>
+            <label htmlFor="mass_message" className="block text-sm font-semibold text-harvest-900 mb-2">
+              Message
+            </label>
+            <textarea
+              id="mass_message"
+              value={massMessage}
+              onChange={(e) => setMassMessage(e.target.value)}
+              placeholder="Type your message here... (e.g., Reminder: Friendsgiving is tomorrow at 6 PM! Can't wait to see everyone!)"
+              rows={4}
+              className="w-full px-4 py-3 border-2 border-autumn-300 rounded-lg focus:ring-2 focus:ring-sky-400 focus:border-sky-500 text-base text-harvest-900 bg-white placeholder:text-terra-400"
+              required
+            />
+            <p className="text-xs text-harvest-600 mt-1">
+              Character count: {massMessage.length}
+            </p>
+          </div>
+
+          <button
+            type="submit"
+            disabled={sendingMassSMS || guests.length === 0}
+            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-sky-600 to-sky-700 text-white rounded-lg hover:from-sky-700 hover:to-sky-800 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed font-semibold shadow-md hover:shadow-lg transition-all"
+          >
+            <Send className="w-5 h-5" />
+            {sendingMassSMS ? `Sending to ${guests.length} guests...` : `Send to All ${guests.length} Guests`}
+          </button>
+        </form>
+
+        {massSMSResult && (
+          <div className="mt-4 p-4 bg-sky-50 border border-sky-200 rounded-lg">
+            <h3 className="font-semibold text-harvest-900 mb-2">Send Results:</h3>
+            <div className="space-y-1 text-sm">
+              <p className="text-green-700">✓ Successfully sent: {massSMSResult.sent}</p>
+              {massSMSResult.failed > 0 && (
+                <>
+                  <p className="text-red-700">✗ Failed: {massSMSResult.failed}</p>
+                  {massSMSResult.errors.length > 0 && (
+                    <div className="mt-2">
+                      <p className="font-semibold text-harvest-900">Errors:</p>
+                      <ul className="list-disc list-inside text-red-600 text-xs">
+                        {massSMSResult.errors.map((error, idx) => (
+                          <li key={idx}>{error}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Pending Reminders */}

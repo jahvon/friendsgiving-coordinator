@@ -310,9 +310,6 @@ export default function DashboardPage() {
                     Name
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-terra-900 uppercase">
-                    Cooking Skill
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-terra-900 uppercase">
                     Dietary Restrictions
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-terra-900 uppercase">
@@ -324,7 +321,6 @@ export default function DashboardPage() {
                 {data.guests.map((guest) => (
                   <tr key={guest.id} className="hover:bg-cream-100 transition-colors">
                     <td className="px-4 py-4 text-base text-terra-900 font-medium">{guest.name}</td>
-                    <td className="px-4 py-4 text-base text-terra-800 capitalize">{guest.cooking_skill}</td>
                     <td className="px-4 py-4 text-base text-terra-700">
                       {guest.dietary_restrictions.length > 0
                         ? guest.dietary_restrictions.join(', ')

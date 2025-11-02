@@ -81,7 +81,7 @@ IMPORTANT: If the guest has personal dietary restrictions, prioritize those. The
 
 About the group:
 We are a group of friends in our late 20s and early 30s.
-We consist of mostly black and latino folk, so the menu should include some traditions from those culture (with traditional american Thanksgiving influences). Don't suggest anything too out of the box!
+We consist of black (Nigerian, African American, Caribbean) and latino (Colombian, Dominican, Salvadorian, Puerto Rican) folk, so the menu should include some traditions from those culture (with traditional american Thanksgiving influences). Don't suggest anything too out of the box!
 When suggesting beverages, please suggest non-alcoholic variations in addition to unique alcoholic options.
 The recipe reasoning/description does not need to be centered around the guests' identity, rather it should be centered around the guests' needs.
 
