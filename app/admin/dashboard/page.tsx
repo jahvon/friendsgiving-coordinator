@@ -17,6 +17,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sendingReminder, setSendingReminder] = useState<string | null>(null);
+  const [newRequest, setNewRequest] = useState({ dish_name: '', category: 'side' as DishCategory });
 
   useEffect(() => {
     fetchData();
@@ -127,6 +128,32 @@ export default function AdminDashboard() {
       fetchData();
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Update failed');
+    }
+  };
+
+  const handleRequestDish = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newRequest.dish_name.trim()) return;
+
+    try {
+      const response = await fetch('/api/dishes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          guest_id: 'host',
+          guest_name: 'Jahvon',
+          category: newRequest.category,
+          dish_name: newRequest.dish_name,
+          status: 'requested',
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to request dish');
+
+      setNewRequest({ dish_name: '', category: 'side' });
+      fetchData();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Request failed');
     }
   };
 
@@ -313,6 +340,73 @@ export default function AdminDashboard() {
           )}
         </div>
       )}
+
+      {/* Request Dishes */}
+      <div className="bg-white shadow-xl rounded-xl p-6 border-2 border-autumn-200">
+        <h2 className="text-2xl font-bold text-harvest-900 mb-4">Request Dishes</h2>
+        <p className="text-harvest-700 mb-4">Request specific dishes that you'd like guests to bring. These will appear as options on the RSVP page.</p>
+
+        <form onSubmit={handleRequestDish} className="mb-6">
+          <div className="grid md:grid-cols-3 gap-4 items-end">
+            <div>
+              <label className="block text-sm font-semibold text-harvest-900 mb-2">Dish Name</label>
+              <input
+                type="text"
+                value={newRequest.dish_name}
+                onChange={(e) => setNewRequest({ ...newRequest, dish_name: e.target.value })}
+                placeholder="e.g., Mac and Cheese"
+                className="w-full px-4 py-2 border-2 border-autumn-300 rounded-lg text-harvest-900"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-harvest-900 mb-2">Category</label>
+              <select
+                value={newRequest.category}
+                onChange={(e) => setNewRequest({ ...newRequest, category: e.target.value as DishCategory })}
+                className="w-full px-4 py-2 border-2 border-autumn-300 rounded-lg text-harvest-900"
+              >
+                <option value="appetizer">Appetizer</option>
+                <option value="main">Main Course</option>
+                <option value="side">Side Dish</option>
+                <option value="dessert">Dessert</option>
+                <option value="beverage">Beverage</option>
+              </select>
+            </div>
+            <button
+              type="submit"
+              className="px-6 py-2 bg-warm-600 text-white rounded-lg hover:bg-warm-700 font-semibold shadow-md hover:shadow-lg transition-all"
+            >
+              Add Request
+            </button>
+          </div>
+        </form>
+
+        {/* Requested Dishes List */}
+        <div className="space-y-2">
+          <h3 className="font-semibold text-harvest-900">Requested Dishes ({dishes.filter(d => d.status === 'requested').length})</h3>
+          {dishes.filter(d => d.status === 'requested').length === 0 ? (
+            <p className="text-harvest-600 italic">No dish requests yet</p>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {dishes.filter(d => d.status === 'requested').map((dish) => (
+                <div key={dish.id} className="flex items-center justify-between p-3 bg-sky-50 border border-sky-200 rounded-lg">
+                  <div>
+                    <p className="font-semibold text-harvest-900">{dish.dish_name}</p>
+                    <p className="text-sm text-harvest-600 capitalize">{dish.category}</p>
+                  </div>
+                  <button
+                    onClick={() => handleDeleteDish(dish.id)}
+                    className="text-red-600 hover:text-red-800"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Guests Table */}
       <div className="bg-white shadow-xl rounded-xl p-6 border-2 border-autumn-200">

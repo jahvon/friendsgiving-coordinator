@@ -1,6 +1,6 @@
 export type CookingSkill = 'beginner' | 'intermediate' | 'advanced';
 export type DishCategory = 'appetizer' | 'main' | 'side' | 'dessert' | 'beverage';
-export type DishStatus = 'claimed' | 'preparing' | 'confirmed';
+export type DishStatus = 'requested' | 'claimed' | 'preparing' | 'confirmed';
 
 export interface Guest {
   id: string;
@@ -19,7 +19,6 @@ export interface Dish {
   guest_name: string;
   category: DishCategory;
   dish_name: string;
-  serves: number;
   status: DishStatus;
   recipe?: string;
   created_at: string;

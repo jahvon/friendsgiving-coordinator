@@ -21,9 +21,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     // Validate required fields
-    if (!body.guest_id || !body.guest_name || !body.category || !body.dish_name || !body.serves) {
+    if (!body.guest_id || !body.guest_name || !body.category || !body.dish_name) {
       return NextResponse.json(
-        { error: 'Missing required fields: guest_id, guest_name, category, dish_name, serves' },
+        { error: 'Missing required fields: guest_id, guest_name, category, dish_name' },
         { status: 400 }
       );
     }
@@ -33,8 +33,8 @@ export async function POST(request: NextRequest) {
       guest_name: body.guest_name,
       category: body.category,
       dish_name: body.dish_name,
-      serves: body.serves,
       status: body.status || 'claimed',
+      recipe: body.recipe,
     });
 
     return NextResponse.json(newDish, { status: 201 });

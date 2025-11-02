@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { Sparkles, Plus, ArrowLeft, CheckCircle, ExternalLink, Loader2, RefreshCw, ChefHat } from 'lucide-react';
-import type { CookingSkill, RecipeSuggestion, DishCategory } from '@/types';
+import { useState, useEffect } from 'react';
+import { Sparkles, Plus, ArrowLeft, CheckCircle, ExternalLink, Loader2, RefreshCw, ChefHat, Star } from 'lucide-react';
+import { toast, Toaster } from 'sonner';
+import type { CookingSkill, RecipeSuggestion, DishCategory, Dish } from '@/types';
 
 interface ClaimedDishWithRecipe {
   dish_name: string;
@@ -21,10 +22,14 @@ export default function SignupPage() {
   const [suggestions, setSuggestions] = useState<RecipeSuggestion[]>([]);
   const [claimedDishes, setClaimedDishes] = useState<ClaimedDishWithRecipe[]>([]);
   const [showCustomForm, setShowCustomForm] = useState(false);
+  const [showRequestForm, setShowRequestForm] = useState(false);
   const [customDish, setCustomDish] = useState({
     dish_name: '',
     category: 'side' as DishCategory,
-    serves: 8,
+  });
+  const [requestDish, setRequestDish] = useState({
+    dish_name: '',
+    category: 'side' as DishCategory,
   });
   const [loading, setLoading] = useState(false);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
@@ -33,6 +38,24 @@ export default function SignupPage() {
   const [lookupPhone, setLookupPhone] = useState('');
   const [lookupLoading, setLookupLoading] = useState(false);
   const [showLookupForm, setShowLookupForm] = useState(false);
+  const [requestedDishes, setRequestedDishes] = useState<Dish[]>([]);
+
+  // Fetch requested dishes on mount
+  useEffect(() => {
+    const fetchRequestedDishes = async () => {
+      try {
+        const response = await fetch('/api/dishes');
+        if (response.ok) {
+          const allDishes = await response.json();
+          setRequestedDishes(allDishes.filter((d: Dish) => d.status === 'requested'));
+        }
+      } catch (err) {
+        console.error('Failed to fetch requested dishes:', err);
+      }
+    };
+
+    fetchRequestedDishes();
+  }, [guestId]);
 
   const fetchSuggestions = async () => {
     setLoadingSuggestions(true);
@@ -92,9 +115,6 @@ export default function SignupPage() {
 
       const guest = await guestResponse.json();
       setGuestId(guest.id);
-
-      // Get initial recipe suggestions
-      await fetchSuggestions();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
@@ -102,7 +122,7 @@ export default function SignupPage() {
     }
   };
 
-  const handleClaimDish = async (dish: { dish_name: string; category: DishCategory; serves: number }, recipe?: RecipeSuggestion) => {
+  const handleClaimDish = async (dish: { dish_name: string; category: DishCategory }, recipe?: RecipeSuggestion) => {
     if (!guestId) return;
 
     setLoading(true);
@@ -117,7 +137,6 @@ export default function SignupPage() {
           guest_name: formData.name,
           category: dish.category,
           dish_name: dish.dish_name,
-          serves: dish.serves,
           status: 'claimed',
           recipe: recipe ? JSON.stringify({
             ingredients: recipe.ingredients,
@@ -132,7 +151,39 @@ export default function SignupPage() {
 
       setClaimedDishes([...claimedDishes, { dish_name: dish.dish_name, recipe }]);
       setShowCustomForm(false);
-      setCustomDish({ dish_name: '', category: 'side', serves: 8 });
+      setCustomDish({ dish_name: '', category: 'side' });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to claim dish');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleClaimRequestedDish = async (dishId: string, dishName: string, category: DishCategory) => {
+    if (!guestId) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/dishes', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: dishId,
+          guest_id: guestId,
+          guest_name: formData.name,
+          status: 'claimed',
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to claim dish');
+      }
+
+      setClaimedDishes([...claimedDishes, { dish_name: dishName }]);
+      // Remove from requested dishes
+      setRequestedDishes(requestedDishes.filter(d => d.id !== dishId));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to claim dish');
     } finally {
@@ -147,6 +198,45 @@ export default function SignupPage() {
       return;
     }
     handleClaimDish(customDish);
+  };
+
+  const handleRequestDishSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!requestDish.dish_name.trim() || !guestId) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/dishes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          guest_id: guestId,
+          guest_name: formData.name,
+          category: requestDish.category,
+          dish_name: requestDish.dish_name,
+          status: 'requested',
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to request dish');
+
+      alert('Dish request added! Others can now see your request.');
+      setRequestDish({ dish_name: '', category: 'side' });
+      setShowRequestForm(false);
+
+      // Refresh requested dishes
+      const dishesResponse = await fetch('/api/dishes');
+      if (dishesResponse.ok) {
+        const allDishes = await dishesResponse.json();
+        setRequestedDishes(allDishes.filter((d: Dish) => d.status === 'requested'));
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to request dish');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleLookupRSVP = async (e: React.FormEvent) => {
@@ -172,8 +262,19 @@ export default function SignupPage() {
         bringing_partner: guest.bringing_partner,
       });
 
-      // Fetch suggestions for existing user
-      await fetchSuggestions();
+      // Fetch existing dishes for this guest
+      const dishesResponse = await fetch('/api/dishes');
+      if (dishesResponse.ok) {
+        const allDishes = await dishesResponse.json();
+        const guestDishes = allDishes.filter((d: any) => d.guest_id === guest.id);
+
+        // Convert dishes to ClaimedDishWithRecipe format
+        const claimed: ClaimedDishWithRecipe[] = guestDishes.map((d: any) => ({
+          dish_name: d.dish_name,
+          recipe: d.recipe ? JSON.parse(d.recipe) : undefined,
+        }));
+        setClaimedDishes(claimed);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to find RSVP');
     } finally {
@@ -213,9 +314,10 @@ export default function SignupPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
+      <Toaster />
       <div className="bg-white shadow-2xl rounded-2xl p-8">
         <h2 className="font-display text-4xl font-semibold mb-8 text-terra-900">
-          {guestId ? `Welcome, ${formData.name}!` : 'RSVP for Friendsgiving'}
+          {guestId ? `Hey ${formData.name}! 👋` : 'RSVP for Friendsgiving'}
         </h2>
 
         {!guestId ? (
@@ -223,12 +325,12 @@ export default function SignupPage() {
             {/* Existing RSVP Lookup Section */}
             <div className="mb-8 bg-sky-50 border-2 border-sky-200 rounded-xl p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-semibold text-terra-900">Already RSVP'd?</h3>
+                <h3 className="text-xl font-semibold text-terra-900">Already signed up?</h3>
                 <button
                   onClick={() => setShowLookupForm(!showLookupForm)}
                   className="text-sky-700 hover:text-sky-800 font-semibold text-sm"
                 >
-                  {showLookupForm ? 'Hide' : 'View/Edit Your RSVP'}
+                  {showLookupForm ? 'Hide' : 'Check my info'}
                 </button>
               </div>
 
@@ -432,138 +534,191 @@ export default function SignupPage() {
             )}
 
             <div>
-              <h3 className="font-display text-2xl font-semibold text-terra-900 mb-4">Choose Your Dish</h3>
-              <div className="grid md:grid-cols-2 gap-4">
-                <button
-                  onClick={() => setShowCustomForm(!showCustomForm)}
-                  className="w-full p-5 bg-gradient-to-r from-terra-500 to-terra-600 text-white rounded-xl hover:from-terra-600 hover:to-terra-700 transition-all shadow-md font-semibold text-lg flex items-center justify-center gap-2"
-                >
-                  {showCustomForm ? (
-                    <>
-                      <ArrowLeft className="w-5 h-5" />
-                      Back to Suggestions
-                    </>
-                  ) : (
-                    <>
-                      <Plus className="w-5 h-5" />
-                      Bring Your Own Specialty Dish
-                    </>
-                  )}
-                </button>
-                <button
-                  onClick={handleClaimLater}
-                  disabled={loading}
-                  className="w-full p-5 bg-gradient-to-r from-sky-500 to-sky-600 text-white rounded-xl hover:from-sky-600 hover:to-sky-700 transition-all shadow-md font-semibold text-lg flex items-center justify-center gap-2 disabled:from-gray-400 disabled:to-gray-400"
-                >
-                  <Sparkles className="w-5 h-5" />
-                  Claim Later (Get SMS Reminder)
-                </button>
-              </div>
-            </div>
+              <h3 className="font-display text-2xl font-semibold text-terra-900 mb-6">What are you bringing?</h3>
 
-            {showCustomForm ? (
-              <form onSubmit={handleCustomDishSubmit} className="bg-warm-50 border border-warm-300 rounded-xl p-6 space-y-4">
-                <h4 className="text-xl font-semibold text-terra-900 mb-4">Add Your Own Dish</h4>
-
-                <div>
-                  <label htmlFor="custom_dish_name" className="block text-base font-semibold text-terra-900 mb-2">
-                    Dish Name *
-                  </label>
-                  <input
-                    type="text"
-                    id="custom_dish_name"
-                    required
-                    value={customDish.dish_name}
-                    onChange={(e) => setCustomDish({ ...customDish, dish_name: e.target.value })}
-                    placeholder="e.g., Grandma's Famous Apple Pie"
-                    className="w-full px-4 py-3 border border-warm-300 rounded-lg focus:ring-2 focus:ring-warm-400 focus:border-warm-500 text-base text-terra-900 bg-white placeholder:text-terra-400"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="custom_category" className="block text-base font-semibold text-terra-900 mb-2">
-                    Category *
-                  </label>
-                  <select
-                    id="custom_category"
-                    value={customDish.category}
-                    onChange={(e) => setCustomDish({ ...customDish, category: e.target.value as DishCategory })}
-                    className="w-full px-4 py-3 border border-warm-300 rounded-lg focus:ring-2 focus:ring-warm-400 focus:border-warm-500 text-base text-terra-900 bg-white"
-                  >
-                    <option value="appetizer">Appetizer</option>
-                    <option value="main">Main Course</option>
-                    <option value="side">Side Dish</option>
-                    <option value="dessert">Dessert</option>
-                    <option value="beverage">Beverage</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label htmlFor="custom_serves" className="block text-base font-semibold text-terra-900 mb-2">
-                    Serves (number of people)
-                  </label>
-                  <input
-                    type="number"
-                    id="custom_serves"
-                    min="1"
-                    max="50"
-                    value={customDish.serves}
-                    onChange={(e) => setCustomDish({ ...customDish, serves: parseInt(e.target.value) })}
-                    className="w-full px-4 py-3 border border-warm-300 rounded-lg focus:ring-2 focus:ring-warm-400 focus:border-warm-500 text-base text-terra-900 bg-white"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-gradient-to-r from-warm-500 to-warm-600 text-white py-3 px-6 rounded-full hover:from-warm-600 hover:to-warm-700 disabled:from-gray-400 disabled:to-gray-400 font-semibold text-lg shadow-md"
-                >
-                  {loading ? 'Adding Dish...' : 'Claim This Dish'}
-                </button>
-              </form>
-            ) : (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
+              {/* Three Options as Cards */}
+              <div className="grid md:grid-cols-3 gap-6 mb-8">
+                {/* Option 1: AI Suggestions */}
+                <div className="bg-gradient-to-br from-warm-50 to-warm-100 border-2 border-warm-300 rounded-xl p-6 flex flex-col">
+                  <div className="flex items-center gap-2 mb-3">
                     <Sparkles className="w-6 h-6 text-warm-600" />
-                    <h4 className="text-xl font-semibold text-terra-900">AI-Powered Suggestions For You</h4>
+                    <h4 className="text-lg font-semibold text-terra-900">Need ideas?</h4>
                   </div>
+                  <p className="text-terra-700 mb-4 flex-grow text-sm">
+                    I'll suggest some recipes based on what you're good at making
+                  </p>
                   <button
                     onClick={fetchSuggestions}
                     disabled={loadingSuggestions}
-                    className="flex items-center gap-2 px-4 py-2 bg-sky-50 text-sky-700 rounded-lg hover:bg-sky-100 disabled:bg-gray-200 disabled:text-gray-500 font-semibold transition-all border border-sky-200"
+                    className="w-full bg-gradient-to-r from-warm-500 to-warm-600 text-white py-3 px-4 rounded-full hover:from-warm-600 hover:to-warm-700 disabled:from-gray-400 disabled:to-gray-400 font-semibold shadow-md transition-all flex items-center justify-center gap-2"
                   >
-                    <RefreshCw className={`w-4 h-4 ${loadingSuggestions ? 'animate-spin' : ''}`} />
-                    Load More
+                    {loadingSuggestions ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Loading...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-5 h-5" />
+                        Get Suggestions
+                      </>
+                    )}
                   </button>
                 </div>
 
-                {loadingSuggestions ? (
-                  <div className="flex flex-col items-center justify-center py-12 text-warm-600">
-                    <Loader2 className="w-12 h-12 animate-spin mb-3" />
-                    <p className="text-lg font-medium">Finding perfect recipes for you...</p>
+                {/* Option 2: Custom Dish */}
+                <div className="bg-gradient-to-br from-terra-50 to-terra-100 border-2 border-terra-300 rounded-xl p-6 flex flex-col">
+                  <div className="flex items-center gap-2 mb-3">
+                    <ChefHat className="w-6 h-6 text-terra-600" />
+                    <h4 className="text-lg font-semibold text-terra-900">Got something in mind?</h4>
                   </div>
-                ) : suggestions.length === 0 ? (
-                  <div className="text-center py-8 text-terra-600">
-                    <p>No suggestions yet. Click &quot;Load More&quot; to get started!</p>
+                  <p className="text-terra-700 mb-4 flex-grow text-sm">
+                    Already know what you want to bring? Just add it here
+                  </p>
+                  <button
+                    onClick={() => setShowCustomForm(!showCustomForm)}
+                    className="w-full bg-gradient-to-r from-terra-500 to-terra-600 text-white py-3 px-4 rounded-full hover:from-terra-600 hover:to-terra-700 font-semibold shadow-md transition-all flex items-center justify-center gap-2"
+                  >
+                    <Plus className="w-5 h-5" />
+                    {showCustomForm ? 'Cancel' : 'Add Custom Dish'}
+                  </button>
+                </div>
+
+                {/* Option 3: Claim Later */}
+                <div className="bg-gradient-to-br from-sky-50 to-sky-100 border-2 border-sky-300 rounded-xl p-6 flex flex-col">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Loader2 className="w-6 h-6 text-sky-600" />
+                    <h4 className="text-lg font-semibold text-terra-900">Not sure yet?</h4>
                   </div>
-                ) : (
-                  suggestions.map((suggestion, index) => (
+                  <p className="text-terra-700 mb-4 flex-grow text-sm">
+                    No worries! I'll text you a reminder later
+                  </p>
+                  <button
+                    onClick={handleClaimLater}
+                    disabled={loading}
+                    className="w-full bg-gradient-to-r from-sky-500 to-sky-600 text-white py-3 px-4 rounded-full hover:from-sky-600 hover:to-sky-700 disabled:from-gray-400 disabled:to-gray-400 font-semibold shadow-md transition-all flex items-center justify-center gap-2"
+                  >
+                    <Sparkles className="w-5 h-5" />
+                    Get Reminder
+                  </button>
+                </div>
+              </div>
+
+              {/* Custom Dish Form */}
+              {showCustomForm && (
+                <form onSubmit={handleCustomDishSubmit} className="bg-warm-50 border-2 border-warm-300 rounded-xl p-6 space-y-4 mb-6">
+                  <h4 className="text-xl font-semibold text-terra-900 mb-4">Add Your Own Dish</h4>
+
+                  <div>
+                    <label htmlFor="custom_dish_name" className="block text-base font-semibold text-terra-900 mb-2">
+                      Dish Name *
+                    </label>
+                    <input
+                      type="text"
+                      id="custom_dish_name"
+                      required
+                      value={customDish.dish_name}
+                      onChange={(e) => setCustomDish({ ...customDish, dish_name: e.target.value })}
+                      placeholder="e.g., Grandma's Famous Apple Pie"
+                      className="w-full px-4 py-3 border border-warm-300 rounded-lg focus:ring-2 focus:ring-warm-400 focus:border-warm-500 text-base text-terra-900 bg-white placeholder:text-terra-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="custom_category" className="block text-base font-semibold text-terra-900 mb-2">
+                      Category *
+                    </label>
+                    <select
+                      id="custom_category"
+                      value={customDish.category}
+                      onChange={(e) => setCustomDish({ ...customDish, category: e.target.value as DishCategory })}
+                      className="w-full px-4 py-3 border border-warm-300 rounded-lg focus:ring-2 focus:ring-warm-400 focus:border-warm-500 text-base text-terra-900 bg-white"
+                    >
+                      <option value="appetizer">Appetizer</option>
+                      <option value="main">Main Course</option>
+                      <option value="side">Side Dish</option>
+                      <option value="dessert">Dessert</option>
+                      <option value="beverage">Beverage</option>
+                    </select>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full bg-gradient-to-r from-warm-500 to-warm-600 text-white py-3 px-6 rounded-full hover:from-warm-600 hover:to-warm-700 disabled:from-gray-400 disabled:to-gray-400 font-semibold text-lg shadow-md"
+                  >
+                    {loading ? 'Adding Dish...' : 'Claim This Dish'}
+                  </button>
+                </form>
+              )}
+
+              {/* Requested Dishes Section */}
+              {requestedDishes.length > 0 && (
+                <div className="space-y-4 mb-8">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Star className="w-6 h-6 text-harvest-600" />
+                    <h4 className="text-xl font-semibold text-terra-900">I'm hoping someone brings...</h4>
+                  </div>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {requestedDishes.map((dish) => (
+                      <div key={dish.id} className="border-2 border-harvest-300 rounded-xl p-5 bg-gradient-to-br from-harvest-50 to-warm-50 hover:border-harvest-400 hover:shadow-md transition-all">
+                        <div className="flex justify-between items-start gap-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Star className="w-5 h-5 text-harvest-600" />
+                              <h3 className="font-semibold text-xl text-terra-900">{dish.dish_name}</h3>
+                            </div>
+                            <p className="text-base text-terra-700 capitalize mb-3">
+                              {dish.category}
+                            </p>
+                            <p className="text-sm text-harvest-700 italic">Requested by {dish.guest_name}</p>
+                          </div>
+                          <button
+                            onClick={() => handleClaimRequestedDish(dish.id, dish.dish_name, dish.category)}
+                            disabled={loading || claimedDishes.some(d => d.dish_name === dish.dish_name)}
+                            className="bg-gradient-to-r from-harvest-500 to-harvest-600 text-white px-6 py-3 rounded-full hover:from-harvest-600 hover:to-harvest-700 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed font-semibold shadow-md whitespace-nowrap"
+                          >
+                            {claimedDishes.some(d => d.dish_name === dish.dish_name) ? 'Claimed' : 'I\'ll bring this!'}
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* AI Suggestions Section */}
+              {suggestions.length > 0 && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-6 h-6 text-warm-600" />
+                      <h4 className="text-xl font-semibold text-terra-900">AI-Powered Suggestions For You</h4>
+                    </div>
+                    <button
+                      onClick={fetchSuggestions}
+                      disabled={loadingSuggestions}
+                      className="flex items-center gap-2 px-4 py-2 bg-sky-50 text-sky-700 rounded-lg hover:bg-sky-100 disabled:bg-gray-200 disabled:text-gray-500 font-semibold transition-all border border-sky-200"
+                    >
+                      <RefreshCw className={`w-4 h-4 ${loadingSuggestions ? 'animate-spin' : ''}`} />
+                      Load More
+                    </button>
+                  </div>
+
+                  {suggestions.map((suggestion, index) => (
                     <div key={index} className="border border-warm-200 rounded-xl p-6 bg-white hover:border-warm-400 hover:shadow-md transition-all">
                       <div className="flex justify-between items-start mb-3 gap-4">
                         <div className="flex-1">
                           <h3 className="font-semibold text-xl text-terra-900 mb-1">{suggestion.recipe_name}</h3>
                           <p className="text-base text-terra-700">
                             <span className="capitalize font-medium">{suggestion.category}</span> •
-                            <span className="capitalize"> {suggestion.difficulty}</span> •
-                            <span> Serves {suggestion.serves}</span>
+                            <span className="capitalize"> {suggestion.difficulty}</span>
                           </p>
                         </div>
                         <button
                           onClick={() => handleClaimDish({
                             dish_name: suggestion.recipe_name,
                             category: suggestion.category,
-                            serves: suggestion.serves
                           }, suggestion)}
                           disabled={loading || claimedDishes.some(d => d.dish_name === suggestion.recipe_name)}
                           className="bg-gradient-to-r from-warm-500 to-warm-600 text-white px-6 py-3 rounded-full hover:from-warm-600 hover:to-warm-700 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed font-semibold shadow-md whitespace-nowrap"
@@ -600,10 +755,10 @@ export default function SignupPage() {
                         </div>
                       </details>
                     </div>
-                  ))
-                )}
-              </div>
-            )}
+                  ))}
+                </div>
+              )}
+            </div>
 
             <div className="text-center pt-4">
               <a

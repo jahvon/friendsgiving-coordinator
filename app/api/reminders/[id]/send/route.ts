@@ -35,7 +35,7 @@ export async function POST(
       );
     }
 
-    const message = `Hi ${reminder.guest_name}! This is a reminder to claim your dish for Jahvon's Friendsgiving. Visit the RSVP page to choose what you'd like to bring: ${process.env.NEXT_PUBLIC_APP_URL || 'your-app-url'}/signup`;
+    const message = `Hey ${reminder.guest_name}! Just a friendly reminder to pick what you're bringing to my Friendsgiving 🍂 Check out the options here: ${process.env.NEXT_PUBLIC_APP_URL || 'your-app-url'}/rsvp`;
 
     let success = false;
     try {

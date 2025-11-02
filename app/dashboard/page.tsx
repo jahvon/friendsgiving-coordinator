@@ -8,6 +8,11 @@ export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showQuickClaim, setShowQuickClaim] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [guestId, setGuestId] = useState<string | null>(null);
+  const [guestName, setGuestName] = useState('');
+  const [claimLoading, setClaimLoading] = useState(false);
 
   useEffect(() => {
     fetchDashboardData();
@@ -25,6 +30,62 @@ export default function DashboardPage() {
       setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePhoneLookup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setClaimLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/guests?phone=${encodeURIComponent(phoneNumber)}`);
+      if (!response.ok) {
+        throw new Error('Phone number not found. Please RSVP first!');
+      }
+      const guest = await response.json();
+      setGuestId(guest.id);
+      setGuestName(guest.name);
+      setShowQuickClaim(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to find RSVP');
+    } finally {
+      setClaimLoading(false);
+    }
+  };
+
+  const handleQuickClaim = async (dishId: string) => {
+    if (!guestId || !guestName) return;
+
+    setClaimLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/dishes', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: dishId,
+          guest_id: guestId,
+          guest_name: guestName,
+          status: 'claimed',
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to claim dish');
+      }
+
+      alert('Dish claimed successfully!');
+      fetchDashboardData(); // Refresh the data
+      setShowQuickClaim(false);
+      setPhoneNumber('');
+      setGuestId(null);
+      setGuestName('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to claim dish');
+    } finally {
+      setClaimLoading(false);
     }
   };
 
@@ -89,6 +150,78 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      {/* Quick Claim Section */}
+      {data.dishes.filter(d => d.status === 'requested').length > 0 && (
+        <div className="bg-gradient-to-br from-harvest-50 to-warm-50 shadow-2xl rounded-2xl p-8 border-2 border-harvest-300">
+          <h2 className="font-display text-2xl font-semibold mb-4 text-terra-900">Quick Claim a Requested Dish</h2>
+
+          {!showQuickClaim ? (
+            <div>
+              <p className="text-terra-700 mb-4">Already RSVP'd? Enter your phone number to quickly claim a dish someone requested.</p>
+              <form onSubmit={handlePhoneLookup} className="flex gap-3">
+                <input
+                  type="tel"
+                  placeholder="Your phone number"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value.replace(/[^0-9]/g, ''))}
+                  pattern="[0-9]{10,15}"
+                  required
+                  className="flex-1 px-4 py-3 border-2 border-harvest-300 rounded-lg text-terra-900 font-medium"
+                />
+                <button
+                  type="submit"
+                  disabled={claimLoading}
+                  className="px-6 py-3 bg-gradient-to-r from-harvest-500 to-harvest-600 text-white rounded-lg hover:from-harvest-600 hover:to-harvest-700 disabled:from-gray-400 disabled:to-gray-400 font-semibold shadow-md"
+                >
+                  {claimLoading ? 'Looking up...' : 'Continue'}
+                </button>
+              </form>
+            </div>
+          ) : (
+            <div>
+              <div className="flex justify-between items-center mb-4">
+                <p className="text-terra-700">Welcome back, <strong>{guestName}</strong>! Pick a dish to claim:</p>
+                <button
+                  onClick={() => {
+                    setShowQuickClaim(false);
+                    setPhoneNumber('');
+                    setGuestId(null);
+                    setGuestName('');
+                  }}
+                  className="text-terra-600 hover:text-terra-800 underline text-sm"
+                >
+                  Cancel
+                </button>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                {data.dishes.filter(d => d.status === 'requested').map((dish) => (
+                  <div key={dish.id} className="bg-white border-2 border-harvest-300 rounded-lg p-4 flex justify-between items-center">
+                    <div>
+                      <p className="font-semibold text-terra-900 text-lg">{dish.dish_name}</p>
+                      <p className="text-terra-700 capitalize text-sm">{dish.category}</p>
+                      <p className="text-harvest-700 text-sm italic">Requested by {dish.guest_name}</p>
+                    </div>
+                    <button
+                      onClick={() => handleQuickClaim(dish.id)}
+                      disabled={claimLoading}
+                      className="px-4 py-2 bg-gradient-to-r from-warm-500 to-warm-600 text-white rounded-lg hover:from-warm-600 hover:to-warm-700 disabled:from-gray-400 disabled:to-gray-400 font-semibold shadow-md whitespace-nowrap"
+                    >
+                      Claim
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {error && (
+            <div className="mt-4 bg-warm-100 border border-warm-400 text-warm-900 px-4 py-3 rounded-lg font-medium">
+              {error}
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="bg-white shadow-2xl rounded-2xl p-8">
         <h2 className="font-display text-2xl font-semibold mb-6 text-terra-900">Menu Balance</h2>
         <div className="space-y-5">
@@ -138,9 +271,6 @@ export default function DashboardPage() {
                     Category
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-terra-900 uppercase">
-                    Serves
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-terra-900 uppercase">
                     Status
                   </th>
                 </tr>
@@ -153,7 +283,6 @@ export default function DashboardPage() {
                     <td className="px-4 py-4 text-base text-terra-700 capitalize">
                       {dish.category}
                     </td>
-                    <td className="px-4 py-4 text-base text-terra-700">{dish.serves}</td>
                     <td className="px-4 py-4">
                       <span
                         className={`px-3 py-1 rounded-full text-sm font-semibold ${

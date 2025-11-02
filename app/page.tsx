@@ -35,7 +35,7 @@ export default async function Home() {
           {/* Event Details */}
           <div className="p-8">
             <p className="text-center text-lg text-terra-700 mb-8 leading-relaxed">
-              Join us for a wonderful feast filled with good food, great company, and warm memories
+              Hey friends! Let's get together for a cozy evening of amazing food and even better company. Can't wait to see you there!
             </p>
 
             <div className="grid md:grid-cols-3 gap-6 mb-10">
@@ -83,14 +83,24 @@ export default async function Home() {
               </div>
             </div>
 
-            <div className="text-center">
+            <div className="text-center space-y-4">
               <Link
-                href="/signup"
+                href="/rsvp"
                 className="inline-flex items-center gap-3 px-10 py-5 bg-gradient-to-r from-warm-500 to-warm-600 text-white rounded-full hover:from-warm-600 hover:to-warm-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-lg font-semibold"
               >
                 <ChefHat className="w-6 h-6" />
                 RSVP & Choose Your Dish
               </Link>
+
+              <div>
+                <Link
+                  href="/dashboard"
+                  className="inline-flex items-center gap-2 text-terra-700 hover:text-warm-600 font-semibold text-base transition-colors underline decoration-2 underline-offset-4"
+                >
+                  <Utensils className="w-5 h-5" />
+                  View The Menu
+                </Link>
+              </div>
             </div>
           </div>
         </div>
@@ -108,8 +118,8 @@ export default async function Home() {
                 1
               </div>
               <div className="pt-1">
-                <p className="font-semibold text-lg mb-1 text-terra-900">RSVP</p>
-                <p className="text-terra-700 leading-relaxed">Tell us about your cooking skills and any dietary restrictions</p>
+                <p className="font-semibold text-lg mb-1 text-terra-900">Let me know you're coming</p>
+                <p className="text-terra-700 leading-relaxed">Just tell me a bit about your cooking vibe and any dietary stuff I should know about</p>
               </div>
             </li>
 
@@ -118,8 +128,8 @@ export default async function Home() {
                 2
               </div>
               <div className="pt-1">
-                <p className="font-semibold text-lg mb-1 text-terra-900">Get Suggestions</p>
-                <p className="text-terra-700 leading-relaxed">Receive AI-powered recipe ideas tailored to your abilities, or bring your own specialty</p>
+                <p className="font-semibold text-lg mb-1 text-terra-900">Pick what you want to bring</p>
+                <p className="text-terra-700 leading-relaxed">I've got some AI-powered ideas based on what you're comfortable making, or feel free to bring your go-to dish!</p>
               </div>
             </li>
 
@@ -128,8 +138,8 @@ export default async function Home() {
                 3
               </div>
               <div className="pt-1">
-                <p className="font-semibold text-lg mb-1 text-terra-900">Claim Your Dishes</p>
-                <p className="text-terra-700 leading-relaxed">Choose as many dishes as you&apos;d like to bring to the celebration</p>
+                <p className="font-semibold text-lg mb-1 text-terra-900">Claim as many as you want</p>
+                <p className="text-terra-700 leading-relaxed">No pressure - bring one thing or bring five. Whatever works for you!</p>
               </div>
             </li>
 
@@ -138,21 +148,11 @@ export default async function Home() {
                 4
               </div>
               <div className="pt-1">
-                <p className="font-semibold text-lg mb-1 text-terra-900">Enjoy the Feast</p>
-                <p className="text-terra-700 leading-relaxed">Join us for an amazing meal with perfect variety and balance</p>
+                <p className="font-semibold text-lg mb-1 text-terra-900">Show up and eat!</p>
+                <p className="text-terra-700 leading-relaxed">That's it. Just come hungry and ready for a good time</p>
               </div>
             </li>
           </ol>
-        </div>
-
-        {/* Host Dashboard Link */}
-        <div className="text-center py-2">
-          <Link
-            href="/dashboard"
-            className="text-sm text-terra-600 hover:text-terra-800 underline opacity-70 hover:opacity-100 transition-opacity"
-          >
-            Host dashboard
-          </Link>
         </div>
       </div>
     </div>
