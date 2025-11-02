@@ -2,6 +2,9 @@ import Link from 'next/link';
 import { Utensils, Calendar, MapPin, Users, Sparkles, ChefHat } from 'lucide-react';
 import { getEventConfig, getGuests } from '@/lib/storage';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function Home() {
   const eventConfig = await getEventConfig();
   const guests = await getGuests();
