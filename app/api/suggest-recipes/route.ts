@@ -81,8 +81,9 @@ IMPORTANT: If the guest has personal dietary restrictions, prioritize those. The
 
 About the group:
 We are a group of friends in our late 20s and early 30s.
-We consist of mostly black and latino folk, so the menu should be centered around those cultural traditions (with some traditional american Thanksgiving themes kept in mind).
+We consist of mostly black and latino folk, so the menu should include some traditions from those culture (with traditional american Thanksgiving influences). Don't suggest anything too out of the box!
 When suggesting beverages, please suggest non-alcoholic variations in addition to unique alcoholic options.
+The recipe reasoning/description does not need to be centered around the guests' identity, rather it should be centered around the guests' needs.
 
 Here are the dishes already claimed by other guests:
 ${claimedDishesSummary || 'No dishes have been claimed yet.'}
@@ -109,7 +110,6 @@ Return your response as a JSON array of recipe suggestions with this EXACT forma
     "category": "appetizer|main|side|dessert|beverage",
     "recipe_name": "Recipe Name",
     "difficulty": "beginner|intermediate|advanced",
-    "serves": number,
     "reasoning": "Why this recipe is a good fit, considering the user's skills, restrictions, and what's already been claimed.",
     "ingredients_summary": "Brief overview of main ingredients",
     "ingredients": ["ingredient 1", "ingredient 2", "ingredient 3"],

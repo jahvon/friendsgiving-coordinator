@@ -3,6 +3,8 @@ import { getGuests, addGuest, findGuestByPhone } from '@/lib/storage';
 import type { Guest } from '@/types';
 
 export const runtime = 'edge';
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,12 +20,20 @@ export async function GET(request: NextRequest) {
           { status: 404 }
         );
       }
-      return NextResponse.json(guest);
+      return NextResponse.json(guest, {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+        },
+      });
     }
 
     // Return all guests
     const guests = await getGuests();
-    return NextResponse.json(guests);
+    return NextResponse.json(guests, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+      },
+    });
   } catch (error) {
     console.error('Error fetching guests:', error);
     return NextResponse.json(

@@ -26,10 +26,10 @@ export default function AdminDashboard() {
   const fetchData = async () => {
     try {
       const [guestsRes, dishesRes, eventRes, remindersRes] = await Promise.all([
-        fetch('/api/guests'),
-        fetch('/api/dishes'),
-        fetch('/api/admin/event'),
-        fetch('/api/reminders'),
+        fetch('/api/guests', { cache: 'no-store' }),
+        fetch('/api/dishes', { cache: 'no-store' }),
+        fetch('/api/admin/event', { cache: 'no-store' }),
+        fetch('/api/reminders', { cache: 'no-store' }),
       ]);
 
       if (!guestsRes.ok || !dishesRes.ok || !eventRes.ok || !remindersRes.ok) {
@@ -344,7 +344,7 @@ export default function AdminDashboard() {
       {/* Request Dishes */}
       <div className="bg-white shadow-xl rounded-xl p-6 border-2 border-autumn-200">
         <h2 className="text-2xl font-bold text-harvest-900 mb-4">Request Dishes</h2>
-        <p className="text-harvest-700 mb-4">Request specific dishes that you'd like guests to bring. These will appear as options on the RSVP page.</p>
+        <p className="text-harvest-700 mb-4">Request specific dishes that you&apos;d like guests to bring. These will appear as options on the RSVP page.</p>
 
         <form onSubmit={handleRequestDish} className="mb-6">
           <div className="grid md:grid-cols-3 gap-4 items-end">
@@ -526,7 +526,6 @@ export default function AdminDashboard() {
                 <th className="px-4 py-3 text-left text-sm font-bold text-harvest-900">Dish</th>
                 <th className="px-4 py-3 text-left text-sm font-bold text-harvest-900">Guest</th>
                 <th className="px-4 py-3 text-left text-sm font-bold text-harvest-900">Category</th>
-                <th className="px-4 py-3 text-left text-sm font-bold text-harvest-900">Serves</th>
                 <th className="px-4 py-3 text-left text-sm font-bold text-harvest-900">Status</th>
                 <th className="px-4 py-3 text-left text-sm font-bold text-harvest-900">Actions</th>
               </tr>
@@ -562,18 +561,6 @@ export default function AdminDashboard() {
                       </select>
                     ) : (
                       <span className="text-harvest-800 capitalize">{dish.category}</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3">
-                    {editingDish === dish.id ? (
-                      <input
-                        type="number"
-                        defaultValue={dish.serves}
-                        onBlur={(e) => handleUpdateDish(dish.id, { serves: parseInt(e.target.value) })}
-                        className="px-2 py-1 border rounded w-20 text-harvest-900"
-                      />
-                    ) : (
-                      <span className="text-harvest-800">{dish.serves}</span>
                     )}
                   </td>
                   <td className="px-4 py-3 text-harvest-800 capitalize">{dish.status}</td>

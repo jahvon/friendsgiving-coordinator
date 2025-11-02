@@ -52,14 +52,12 @@ export interface DashboardData {
     target: number;
     percentage: number;
   }[];
-  total_servings: number;
 }
 
 export interface RecipeSuggestion {
   category: DishCategory;
   recipe_name: string;
   difficulty: CookingSkill;
-  serves: number;
   reasoning: string;
   ingredients_summary: string;
   ingredients: string[];

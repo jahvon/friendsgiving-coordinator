@@ -2,11 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDishes, addDish, updateDish, deleteDish } from '@/lib/storage';
 
 export const runtime = 'edge';
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function GET() {
   try {
     const dishes = await getDishes();
-    return NextResponse.json(dishes);
+    return NextResponse.json(dishes, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+      },
+    });
   } catch (error) {
     console.error('Error fetching dishes:', error);
     return NextResponse.json(

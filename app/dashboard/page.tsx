@@ -20,7 +20,9 @@ export default function DashboardPage() {
 
   const fetchDashboardData = async () => {
     try {
-      const response = await fetch('/api/dashboard');
+      const response = await fetch('/api/dashboard', {
+        cache: 'no-store',
+      });
       if (!response.ok) {
         throw new Error('Failed to fetch dashboard data');
       }
@@ -120,16 +122,11 @@ export default function DashboardPage() {
               {data.guests.length + data.guests.filter(g => g.bringing_partner).length}
             </p>
             <p className="text-base text-terra-700 font-semibold">Guests Joining</p>
-            {data.guests.filter(g => g.bringing_partner).length > 0 && (
-              <p className="text-sm text-terra-600 mt-1">
-                ({data.guests.length} guests + {data.guests.filter(g => g.bringing_partner).length} partner{data.guests.filter(g => g.bringing_partner).length !== 1 ? 's' : ''})
-              </p>
-            )}
           </div>
 
           <div className="bg-gradient-to-br from-warm-50 to-warm-100 p-6 rounded-xl border border-warm-200">
             <UtensilsCrossed className="w-10 h-10 mb-3 text-warm-700" />
-            <p className="text-4xl font-bold text-terra-900">{data.dishes.length}</p>
+            <p className="text-4xl font-bold text-terra-900">{data.dishes.filter(d => d.status !== 'requested').length}</p>
             <p className="text-base text-terra-700 font-semibold">Dishes Claimed</p>
           </div>
         </div>
@@ -143,10 +140,6 @@ export default function DashboardPage() {
             <MapPin className="w-5 h-5 text-warm-600" />
             <p className="text-base"><strong>Location:</strong> {data.event.location}</p>
           </div>
-          <div className="flex items-center gap-2 text-terra-800">
-            <Target className="w-5 h-5 text-warm-600" />
-            <p className="text-base"><strong>Expected Guests:</strong> {data.event.target_guest_count}</p>
-          </div>
         </div>
       </div>
 
@@ -157,7 +150,7 @@ export default function DashboardPage() {
 
           {!showQuickClaim ? (
             <div>
-              <p className="text-terra-700 mb-4">Already RSVP'd? Enter your phone number to quickly claim a dish someone requested.</p>
+              <p className="text-terra-700 mb-4">Already RSVP&apos;d? Enter your phone number to quickly claim a dish someone requested.</p>
               <form onSubmit={handlePhoneLookup} className="flex gap-3">
                 <input
                   type="tel"
@@ -254,7 +247,7 @@ export default function DashboardPage() {
 
       <div className="bg-white shadow-2xl rounded-2xl p-8">
         <h2 className="font-display text-2xl font-semibold mb-6 text-terra-900">The Menu</h2>
-        {data.dishes.length === 0 ? (
+        {data.dishes.filter(d => d.status !== 'requested').length === 0 ? (
           <p className="text-terra-700 text-center py-8 text-lg">No dishes claimed yet. Be the first to contribute!</p>
         ) : (
           <div className="overflow-x-auto">
@@ -276,7 +269,7 @@ export default function DashboardPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-cream-200">
-                {data.dishes.map((dish) => (
+                {data.dishes.filter(d => d.status !== 'requested').map((dish) => (
                   <tr key={dish.id} className="hover:bg-cream-100 transition-colors">
                     <td className="px-4 py-4 text-base text-terra-900 font-medium">{dish.guest_name}</td>
                     <td className="px-4 py-4 text-base text-terra-800">{dish.dish_name}</td>

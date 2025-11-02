@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { checkAdminAuth } from '@/lib/auth';
 import { deleteDish, updateDish } from '@/lib/storage';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function DELETE(request: NextRequest) {
   if (!checkAdminAuth()) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

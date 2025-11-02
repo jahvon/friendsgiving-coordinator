@@ -450,7 +450,7 @@ export default function SignupPage() {
                 className="w-5 h-5 text-warm-600 rounded focus:ring-2 focus:ring-warm-400 border-warm-300"
               />
               <label htmlFor="bringing_partner" className="text-base font-semibold text-terra-900 cursor-pointer">
-                I'd like to bring my partner
+                I&apos;d like to bring my partner
               </label>
             </div>
 
@@ -536,8 +536,8 @@ export default function SignupPage() {
             <div>
               <h3 className="font-display text-2xl font-semibold text-terra-900 mb-6">What are you bringing?</h3>
 
-              {/* Three Options as Cards */}
-              <div className="grid md:grid-cols-3 gap-6 mb-8">
+              {/* Four Options as Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 {/* Option 1: AI Suggestions */}
                 <div className="bg-gradient-to-br from-warm-50 to-warm-100 border-2 border-warm-300 rounded-xl p-6 flex flex-col">
                   <div className="flex items-center gap-2 mb-3">
@@ -545,7 +545,7 @@ export default function SignupPage() {
                     <h4 className="text-lg font-semibold text-terra-900">Need ideas?</h4>
                   </div>
                   <p className="text-terra-700 mb-4 flex-grow text-sm">
-                    I'll suggest some recipes based on what you're good at making
+                    I&apos;ll suggest some recipes based on what you&apos;re good at making
                   </p>
                   <button
                     onClick={fetchSuggestions}
@@ -591,7 +591,7 @@ export default function SignupPage() {
                     <h4 className="text-lg font-semibold text-terra-900">Not sure yet?</h4>
                   </div>
                   <p className="text-terra-700 mb-4 flex-grow text-sm">
-                    No worries! I'll text you a reminder later
+                    No worries! I&apos;ll text you a reminder later
                   </p>
                   <button
                     onClick={handleClaimLater}
@@ -600,6 +600,24 @@ export default function SignupPage() {
                   >
                     <Sparkles className="w-5 h-5" />
                     Get Reminder
+                  </button>
+                </div>
+
+                {/* Option 4: Request a Dish */}
+                <div className="bg-gradient-to-br from-harvest-50 to-harvest-100 border-2 border-harvest-300 rounded-xl p-6 flex flex-col">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Star className="w-6 h-6 text-harvest-600" />
+                    <h4 className="text-lg font-semibold text-terra-900">Want something specific?</h4>
+                  </div>
+                  <p className="text-terra-700 mb-4 flex-grow text-sm">
+                    Request a dish you'd like someone else to bring
+                  </p>
+                  <button
+                    onClick={() => setShowRequestForm(!showRequestForm)}
+                    className="w-full bg-gradient-to-r from-amber-600 to-orange-600 text-white py-3 px-4 rounded-full hover:from-amber-700 hover:to-orange-700 font-semibold shadow-md transition-all flex items-center justify-center gap-2"
+                  >
+                    <Star className="w-5 h-5" />
+                    {showRequestForm ? 'Cancel' : 'Request Dish'}
                   </button>
                 </div>
               </div>
@@ -652,12 +670,61 @@ export default function SignupPage() {
                 </form>
               )}
 
+              {/* Request Dish Form */}
+              {showRequestForm && (
+                <form onSubmit={handleRequestDishSubmit} className="bg-harvest-50 border-2 border-harvest-300 rounded-xl p-6 space-y-4 mb-6">
+                  <h4 className="text-xl font-semibold text-terra-900 mb-4">Request a Dish</h4>
+                  <p className="text-terra-700 mb-4">Request something you&apos;d like someone else to bring. Your request will be visible to other guests!</p>
+
+                  <div>
+                    <label htmlFor="request_dish_name" className="block text-base font-semibold text-terra-900 mb-2">
+                      Dish Name *
+                    </label>
+                    <input
+                      type="text"
+                      id="request_dish_name"
+                      required
+                      value={requestDish.dish_name}
+                      onChange={(e) => setRequestDish({ ...requestDish, dish_name: e.target.value })}
+                      placeholder="e.g., Mac and Cheese"
+                      className="w-full px-4 py-3 border border-harvest-300 rounded-lg focus:ring-2 focus:ring-harvest-400 focus:border-harvest-500 text-base text-terra-900 bg-white placeholder:text-terra-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="request_category" className="block text-base font-semibold text-terra-900 mb-2">
+                      Category *
+                    </label>
+                    <select
+                      id="request_category"
+                      value={requestDish.category}
+                      onChange={(e) => setRequestDish({ ...requestDish, category: e.target.value as DishCategory })}
+                      className="w-full px-4 py-3 border border-harvest-300 rounded-lg focus:ring-2 focus:ring-harvest-400 focus:border-harvest-500 text-base text-terra-900 bg-white"
+                    >
+                      <option value="appetizer">Appetizer</option>
+                      <option value="main">Main Course</option>
+                      <option value="side">Side Dish</option>
+                      <option value="dessert">Dessert</option>
+                      <option value="beverage">Beverage</option>
+                    </select>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full bg-gradient-to-r from-amber-600 to-orange-600 text-white py-3 px-6 rounded-full hover:from-amber-700 hover:to-orange-700 disabled:from-gray-400 disabled:to-gray-400 font-semibold text-lg shadow-md"
+                  >
+                    {loading ? 'Requesting...' : 'Add Request'}
+                  </button>
+                </form>
+              )}
+
               {/* Requested Dishes Section */}
               {requestedDishes.length > 0 && (
                 <div className="space-y-4 mb-8">
                   <div className="flex items-center gap-2 mb-4">
                     <Star className="w-6 h-6 text-harvest-600" />
-                    <h4 className="text-xl font-semibold text-terra-900">I'm hoping someone brings...</h4>
+                    <h4 className="text-xl font-semibold text-terra-900">Someone is hoping for...</h4>
                   </div>
                   <div className="grid md:grid-cols-2 gap-4">
                     {requestedDishes.map((dish) => (
@@ -676,7 +743,7 @@ export default function SignupPage() {
                           <button
                             onClick={() => handleClaimRequestedDish(dish.id, dish.dish_name, dish.category)}
                             disabled={loading || claimedDishes.some(d => d.dish_name === dish.dish_name)}
-                            className="bg-gradient-to-r from-harvest-500 to-harvest-600 text-white px-6 py-3 rounded-full hover:from-harvest-600 hover:to-harvest-700 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed font-semibold shadow-md whitespace-nowrap"
+                            className="bg-gradient-to-r from-amber-600 to-orange-600 text-white px-6 py-3 rounded-full hover:from-amber-700 hover:to-orange-700 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed font-semibold shadow-md whitespace-nowrap"
                           >
                             {claimedDishes.some(d => d.dish_name === dish.dish_name) ? 'Claimed' : 'I\'ll bring this!'}
                           </button>

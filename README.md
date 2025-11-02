@@ -203,7 +203,7 @@ netlify deploy --prod
      - Blue: Needs more dishes
 3. **View complete data**:
    - All guests with their phone numbers, partner status, and claimed status
-   - All dishes with guest names, categories, and servings
+   - All dishes with guest names, and categories
 4. **Configure SMS reminders**:
    - Set the reminder delay in hours (default: 24 hours)
    - Guests who click "Claim Later" will receive a text reminder after this delay
