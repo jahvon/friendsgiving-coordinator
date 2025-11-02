@@ -610,7 +610,7 @@ export default function SignupPage() {
                     <h4 className="text-lg font-semibold text-terra-900">Want something specific?</h4>
                   </div>
                   <p className="text-terra-700 mb-4 flex-grow text-sm">
-                    Request a dish you'd like someone else to bring
+                    Request a dish you&apos;d like someone else to bring
                   </p>
                   <button
                     onClick={() => setShowRequestForm(!showRequestForm)}
