@@ -35,7 +35,7 @@ export default async function Home() {
           {/* Event Details */}
           <div className="p-8">
             <p className="text-center text-lg text-terra-700 mb-8 leading-relaxed">
-              Hey friends! Let's get together for a cozy evening of amazing food and even better company. Can't wait to see you there!
+              Hey friends! Get ready for a cozy evening filled with incredible food, great vibes, and the best company. Mark your calendars—I'm so excited to host and can't wait to celebrate with you all!
             </p>
 
             <div className="grid md:grid-cols-3 gap-6 mb-10">
@@ -72,7 +72,7 @@ export default async function Home() {
                   <Users className="w-7 h-7 text-sage-700" />
                 </div>
                 <h3 className="font-semibold text-lg text-terra-900 mb-2">Who</h3>
-                <p className="text-terra-700 text-center font-medium">Friends & Family</p>
+                <p className="text-terra-700 text-center font-medium">You, of course!</p>
                 {guestCount === 0 ? (
                   <p className="text-terra-600 text-sm mt-1">Be the first to RSVP!</p>
                 ) : guestCount < 3 ? (
@@ -119,7 +119,7 @@ export default async function Home() {
               </div>
               <div className="pt-1">
                 <p className="font-semibold text-lg mb-1 text-terra-900">Let me know you're coming</p>
-                <p className="text-terra-700 leading-relaxed">Just tell me a bit about your cooking vibe and any dietary stuff I should know about</p>
+                <p className="text-terra-700 leading-relaxed">Just tell me a bit about your cooking skill level and any dietary restrictions the group should know about</p>
               </div>
             </li>
 
@@ -129,7 +129,7 @@ export default async function Home() {
               </div>
               <div className="pt-1">
                 <p className="font-semibold text-lg mb-1 text-terra-900">Pick what you want to bring</p>
-                <p className="text-terra-700 leading-relaxed">I've got some AI-powered ideas based on what you're comfortable making, or feel free to bring your go-to dish!</p>
+                <p className="text-terra-700 leading-relaxed">I've got some AI-powered ideas based on what you're comfortable making and what the group needs, or feel free to bring your go-to dish!</p>
               </div>
             </li>
 

@@ -324,18 +324,18 @@ export default function SignupPage() {
           <>
             {/* Existing RSVP Lookup Section */}
             <div className="mb-8 bg-sky-50 border-2 border-sky-200 rounded-xl p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-semibold text-terra-900">Already signed up?</h3>
+              <div className="flex items-center justify-between">
+                <h4 className="text-md font-semibold text-terra-900">Already signed up?</h4>
                 <button
                   onClick={() => setShowLookupForm(!showLookupForm)}
                   className="text-sky-700 hover:text-sky-800 font-semibold text-sm"
                 >
-                  {showLookupForm ? 'Hide' : 'Check my info'}
+                  {showLookupForm ? 'Hide' : 'Find My RSVP'}
                 </button>
               </div>
 
               {showLookupForm && (
-                <form onSubmit={handleLookupRSVP} className="space-y-4">
+                <form onSubmit={handleLookupRSVP} className="space-y-4 mt-4">
                   <div>
                     <label htmlFor="lookup_phone" className="block text-base font-semibold text-terra-900 mb-2">
                       Enter Your Phone Number
@@ -408,7 +408,6 @@ export default function SignupPage() {
                 }}
                 className="w-full px-4 py-3 border border-warm-300 rounded-lg focus:ring-2 focus:ring-warm-400 focus:border-warm-500 text-base text-terra-900 bg-white"
               />
-              <p className="text-sm text-terra-600 mt-1">Enter numbers only (e.g., 5551234567)</p>
             </div>
 
             <div>
@@ -425,6 +424,7 @@ export default function SignupPage() {
                 <option value="intermediate">Intermediate - I can handle most recipes</option>
                 <option value="advanced">Advanced - I love a challenge</option>
               </select>
+                            <p className="text-sm text-terra-600 mt-1">Your skill level is used to finetune your AI-powered recipe suggestions</p>
             </div>
 
             <div>

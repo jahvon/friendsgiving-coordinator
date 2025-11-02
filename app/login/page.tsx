@@ -43,7 +43,7 @@ export default function LoginPage() {
           <div className="text-center mb-8">
             <Utensils className="w-16 h-16 mx-auto mb-4 text-warm-600" />
             <h1 className="font-display text-3xl font-semibold text-terra-900 mb-2">
-              Friendsgiving Coordinator
+              Jahvon's Friendsgiving
             </h1>
             <p className="text-terra-700">
               Enter password to access the event
